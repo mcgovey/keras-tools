@@ -7,7 +7,9 @@ import pandas as pd
 
 sales_df = pd.read_csv('../sales_train_validation.csv')
 
-krt.train_test_split(data = sales_df)
+helper = krt.rnn_helper(sales_df, n_y_vals = 28)
+
+helper.train_test_split()
 
 # class TestJoke(TestCase):
 #     def test_is_string(self):
