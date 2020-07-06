@@ -1,5 +1,3 @@
-print("loaded")
-
 import pandas as pd
 import sklearn
 
