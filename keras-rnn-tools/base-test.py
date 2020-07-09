@@ -20,7 +20,12 @@ class TestStringMethods(unittest.TestCase):
 		
 		self.assertEqual(self.helper.n_y_vals, 28)
 
-
+### Tests
+## train_test_split
+# split_pct less than 0
+# split_pct greater than 1
+# val_split_pct less than 0
+# val_split_pct greater than 1
 
 if __name__ == '__main__':
 	suite = unittest.TestLoader().loadTestsFromTestCase(TestStringMethods)
