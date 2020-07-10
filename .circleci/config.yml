@@ -9,7 +9,10 @@ jobs:
     steps:
       - checkout
       - python/load-cache
-      - python/install-deps
+      # - python/install-deps
+      - run:
+          name: install deps
+          command: make install
       - python/save-cache
       - run:
           command: make lint #./manage.py test
