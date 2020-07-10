@@ -8,11 +8,11 @@ jobs:
     executor: python/default
     steps:
       - checkout
-      - python/load-cache
-      # - python/install-deps
       - run:
           name: install deps
           command: make install
+      - python/load-cache
+      # - python/install-deps
       - python/save-cache
       - run:
           command: make lint #./manage.py test
