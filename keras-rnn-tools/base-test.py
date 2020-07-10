@@ -1,6 +1,6 @@
 # from unittest import TestCase
 
-import structure as ktt
+from . import keras_tools
 
 # import numpy as np
 import pandas as pd
@@ -11,11 +11,12 @@ import unittest
 class TestStringMethods(unittest.TestCase):
 	def setUp(self):
 		self.sales_df = pd.read_csv('../sales_train_validation.csv')
-
-
+		self.helper = ""
+	
+	
 	def test_equality(self):
-		self.helper = ktt.keras_tools(self.sales_df, ts_n_y_vals = 28, debug=False)
-
+		self.helper = keras_tools(self.sales_df, ts_n_y_vals = 28, debug=False)
+		
 		self.helper.train_test_split(split_type='sequential')
 		
 		self.assertEqual(self.helper.ts_n_y_vals, 28)
