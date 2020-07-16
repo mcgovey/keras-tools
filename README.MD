@@ -1,4 +1,6 @@
 # keras-tools
+[![mcgovey](https://circleci.com/gh/mcgovey/keras-tools.svg?style=shield)](https://github.com/mcgovey/keras-rnn-tools)
+
 This package contains tools for transforming data to be used in different Keras architectures.
 
 ## Features

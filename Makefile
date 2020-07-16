@@ -6,8 +6,8 @@ install:
 		pip install -r requirements.txt
 		
 test:
-	# python3 -m pytest -vv --cov=myrepolib tests/*.py
-	python3 -m pytest -W ignore::ResourceWarning tests/*.py
+	# python3 -m pytest -vv --cov=myrepolib tests/*.py -W ignore::ResourceWarning 
+	pytest --cov='.' tests/*.py 
 	
 lint:
 	pylint --disable=R,C keras-rnn-tools/__init__.py

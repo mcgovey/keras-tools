@@ -3,3 +3,4 @@ numpy
 sklearn
 pylint
 pytest
+pytest-cov
