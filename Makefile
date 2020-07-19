@@ -10,6 +10,6 @@ test:
 	pytest --cov='.' tests/*.py 
 	
 lint:
-	pylint --disable=R,C keras-rnn-tools/__init__.py
+	pylint --disable=R,C KerasTools/__init__.py
 	
 all: install lint test

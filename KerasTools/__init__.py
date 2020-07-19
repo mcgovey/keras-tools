@@ -1,6 +1,8 @@
 import pandas as pd
 import numpy as np
 # import sklearn
+from sklearn.preprocessing import MinMaxScaler, StandardScaler
+from sklearn.model_selection import train_test_split
 
 class keras_tools:
 	def __init__(self, data:pd.DataFrame, \
@@ -30,16 +32,21 @@ class keras_tools:
 		# check if ts_n_y_vals is populated
 		elif ts_n_y_vals is not None:
 			self.ts_n_y_vals = ts_n_y_vals
+			if data_orientation == 'row':
+				if self.debug == True: print("Row-wise orientation")
+				self.data = self.data.T
+				if self.debug == True: print(self.data)
+				
+			elif data_orientation == 'column':
+				if self.debug == True: print("Column-wise orientation")
+			else:
+				raise AttributeError(f"Type {data_orientation} specified is not valid. Must be either 'column' or 'row'")
 		# if neither are populated then raise error
 		else:
 			raise AttributeError("Either y_val or ts_n_y_vals must be populated.")
 
-		if data_orientation == 'row':
-			if self.debug == True: print("Row-wise orientation")
-		elif data_orientation == 'column':
-			if self.debug == True: print("Column-wise orientation")
-		else:
-			raise AttributeError(f"Type {data_orientation} specified is not valid. Must be either 'column' or 'row'")
+		# other variables used
+		self.scaler = "" # defined in scale()
 		
 		
 
@@ -58,11 +65,9 @@ class keras_tools:
 		if isinstance(self.scaler, str):
 			if self.debug == True: print("scaler string")
 			if 'minmax' in self.scaler.lower():
-				from sklearn.preprocessing import MinMaxScaler
 				self.scaler = MinMaxScaler()
 
 			elif 'standard' in self.scaler.lower():
-				from sklearn.preprocessing import StandardScaler
 				self.scaler = StandardScaler()
 			else:
 				raise AttributeError("Invalid Scaler Type Passed (minmax or standard expected)")
@@ -89,7 +94,6 @@ class keras_tools:
 				Returns:
 
 		"""
-		from sklearn.model_selection import train_test_split
 
 		# basic parameter checking
 		if split_pct < 0 or split_pct > 1:

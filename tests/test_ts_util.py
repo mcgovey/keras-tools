@@ -4,7 +4,7 @@ import pandas as pd
 
 class TestRNN:
     def setup(self):
-        self.sales_df = pd.read_csv('https://raw.githubusercontent.com/torch/demos/master/logistic-regression/example-logistic-regression.csv')
+        self.sales_df = pd.read_csv('https://raw.githubusercontent.com/nytimes/covid-19-data/master/us.csv')
         
         self.helper = ""
     
