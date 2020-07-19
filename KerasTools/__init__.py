@@ -48,6 +48,13 @@ class keras_tools:
 		# other variables used
 		self.scaler = "" # defined in scale()
 		
+		self.X_train = ""
+		self.X_test = ""
+		self.X_val = ""
+		self.y_train = ""
+		self.y_test = ""
+		self.y_val = ""
+		
 		
 
 	def scale(self, 
@@ -76,6 +83,19 @@ class keras_tools:
 		else:
 			if self.debug == True: print("no scaler passed")
 			raise AttributeError(f"Scaler type {scaler} was not sklearn scaler or string of ('minmax' or 'standard').")
+		
+		# fit to training data
+		self.scaler.fit(self.X_train)
+		
+		# transform all the data in the data set
+		self.scaler.transform(self.X_train)
+		self.scaler.transform(self.X_test)
+		self.scaler.transform(self.X_val)
+		self.scaler.transform(self.y_train)
+		self.scaler.transform(self.y_test)
+		self.scaler.transform(self.y_val)
+			
+		if output_scaler: return self.scaler
 
 	def train_test_split(self, 
 										split_type:str = 'sample',
@@ -110,6 +130,8 @@ class keras_tools:
 			if self.debug == True: print("overlap split")
 		elif split_type == 'sample':
 			if self.debug == True: print("sample split")
+			self.X_train = np.array(self.data)[1:]
+			return self.X_train
 			# X_train, X_test, y_train, y_test = train_test_split(X, y, test_size=split_pct)
 			# X_train, X_val, y_train, y_val = train_test_split(X_train, y_train, test_size=val_split_pct/(1-split_pct))
 			# TODO: add deterministic parameter
