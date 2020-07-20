@@ -5,8 +5,8 @@ spec.loader.exec_module(KerasTools)
 
 import pandas as pd
 
-df = pd.read_csv('https://raw.githubusercontent.com/nytimes/covid-19-data/master/us.csv')
-helper = KerasTools.keras_tools(data = df.iloc[:100,:], ts_n_y_vals = 5, debug=True)
+df = pd.read_csv('https://raw.githubusercontent.com/nytimes/covid-19-data/master/us.csv').iloc[:100,:]
+helper = KerasTools.keras_tools(data = df, ts_n_y_vals = 5, debug=True)
 
 helper.train_test_split(split_type='sequential')
 print(f"X_train: {helper.X_train.shape}")

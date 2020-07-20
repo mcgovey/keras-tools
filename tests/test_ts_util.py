@@ -5,18 +5,18 @@ import pytest
 
 class TestRNN:
     def setup(self):
-        self.sales_df = pd.read_csv('https://raw.githubusercontent.com/nytimes/covid-19-data/master/us.csv')[:100,:]
+        self.sales_df = pd.read_csv('https://raw.githubusercontent.com/nytimes/covid-19-data/master/us.csv').iloc[:100,:]
         
         self.helper = ""
     
     def test_split(self):
         
         
-        self.helper = KerasTools.keras_tools(self.sales_df, ts_n_y_vals = 28, debug=False)
+        self.helper = KerasTools.keras_tools(self.sales_df, ts_n_y_vals = 5, debug=False)
         self.helper.train_test_split(split_type='sequential')
         
         
-        assert self.helper.ts_n_y_vals == 28
+        assert self.helper.ts_n_y_vals == 5
 
     def test_scale(self):
         self.scale_helper = KerasTools.keras_tools(self.sales_df, ts_n_y_vals = 10, debug=False)
@@ -38,7 +38,7 @@ class TestRNN:
         # return scaler is true
         
     def test_seq_split(self):
-        self.scale_helper = KerasTools.keras_tools(self.sales_df, ts_n_y_vals = 10, debug=False)
+        self.scale_helper = KerasTools.keras_tools(self.sales_df, ts_n_y_vals = 5, debug=False)
         
         
         self.scale_helper.train_test_split(split_type='sequential')

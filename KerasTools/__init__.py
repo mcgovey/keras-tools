@@ -177,13 +177,13 @@ class keras_tools:
 		if split_type == 'sequential':
 			if self.debug == True: print("sequential split")
 			
-			train_test_split = floor(self.data.shape[1] * (1 - split_pct - val_split_pct))
+			train_test_split_num = floor(self.data.shape[1] * (1 - split_pct - val_split_pct))
 			test_val_split = floor(self.data.shape[1] * (1 - val_split_pct))
-			if self.debug == True: print("Split at {} and {}".format(train_test_split, test_val_split))
-			x_end = train_test_split - self.ts_n_y_vals
+			if self.debug == True: print("Split at {} and {}".format(train_test_split_num, test_val_split))
+			x_end = train_test_split_num - self.ts_n_y_vals
 			#         print("x_end: {}".format(x_end))
 			# create test variables
-			x_test_start = train_test_split
+			x_test_start = train_test_split_num
 			x_test_end = test_val_split - self.ts_n_y_vals
 			if val_split_pct > 0 and val_split_pct < 1:
 			    # create validation variables
