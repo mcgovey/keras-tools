@@ -4,7 +4,10 @@ import numpy as np
 from sklearn.preprocessing import MinMaxScaler, StandardScaler
 from sklearn.model_selection import train_test_split
 
+# libraries used for train test split
 import random
+from math import floor
+from types import SimpleNamespace
 
 class keras_tools:
 	def __init__(self, data:pd.DataFrame, \
@@ -102,26 +105,66 @@ class keras_tools:
 		self.scaler.transform(self.y_valid)
 			
 		if output_scaler: return self.scaler
+		
+		
+	def _chunk_data (self, df, scaler = None, output_labels = True, **kwargs):
+      
+
+	    # reassign the dictionary variables to variables in namespace for easy access
+	    n = SimpleNamespace(**kwargs)
+	    np_arr_list, y_arr_list = [], []
+	    
+	            
+	    # loop through each step and create a new np array to add to list
+	    for chunk_start in range(n.start, (n.end - n.sample_size + 1), n.step):
+	        
+	        # get a chunk of x values and store to array
+	        print("From {} to {}".format(chunk_start, chunk_start + n.sample_size))
+	        np_chunk = np.array(df.iloc[:,(chunk_start):(chunk_start + n.sample_size)])
+	        # add stored array to list
+	        np_arr_list.append(np_chunk)
+	        
+	        if output_labels:
+	            print("Y samples from {} to {}".format((chunk_start + n.sample_size), (chunk_start + n.sample_size + n.y_size)))
+	            y_df_chunk = df.iloc[:,(chunk_start + n.sample_size):(chunk_start + n.sample_size + n.y_size)]
+	            y_np_chunk = np.array(y_df_chunk)
+	            y_arr_list.append(y_np_chunk)
+	        
+	    # stack all the x samples together
+	    np_stacked_chunks = np.stack(np_arr_list)
+	    x_reshaped = np.transpose(np_stacked_chunks, (0,2,1))
+	    
+	    if output_labels:
+	        # stack all the y samples together
+	        y_np_stacked_chunks = np.stack(y_arr_list)
+	        y_reshaped = y_np_stacked_chunks
+	        return x_reshaped, y_reshaped
+	    else:
+	        return x_reshaped
 
 	def train_test_split(self, 
 										split_type:str = 'sample',
 										split_pct:float = 0.3,
 										val_split_pct:float = 0.1,
+										step:int = 1,
+										sample_size:int = 2,
 										fill_na:bool = True,
 										return_as_df:bool = False):
 		"""Create the base train-test-validation split for time-series data
 				
 				Args:
 					split_type (str): Indication of the type of split to perform. Must be one of 'sequential', 'overlap', or 'sample'
-					split_pct (bool, optional): 
+					split_pct (bool): 
 					val_split_pct (bool, optional): 
+					step (int): The number of steps before you take another sample (e.g. [1,3,5,6,7,9] and step of 2 would return x values of [[1,3][5,6][7,9]])
+					sample_size (int): The number of samples you want to take for each value (e.g. [1,3,5,6,7,9] and sample_size of 3 would return x values of [[1,3,5][3,5,6][5,6,7][6,7,9]])
 					fill_na (bool): Replace all NAs with 0's, typical prep. Default is True.
 					return_as_df (bool): Option to instead return the data as a dataframe (useful for debugging). Default is False.
 				Returns:
 
 		"""
 
-		# basic parameter checking
+		#### basic parameter checking
 		if split_pct < 0 or split_pct > 1:
 			raise AttributeError(f"split_pct must be between 0 and 1. {split_pct} passed.") 
 		if val_split_pct < 0 or val_split_pct > 1:
@@ -130,8 +173,48 @@ class keras_tools:
 		if fill_na==True:
 			self.data.fillna(0, inplace=True)
 
+		#### create split depending on split_type
 		if split_type == 'sequential':
 			if self.debug == True: print("sequential split")
+			
+			train_test_split = floor(self.data.shape[1] * (1 - split_pct - val_split_pct))
+			test_val_split = floor(self.data.shape[1] * (1 - val_split_pct))
+			if self.debug == True: print("Split at {} and {}".format(train_test_split, test_val_split))
+			x_end = train_test_split - self.ts_n_y_vals
+			#         print("x_end: {}".format(x_end))
+			# create test variables
+			x_test_start = train_test_split
+			x_test_end = test_val_split - self.ts_n_y_vals
+			if val_split_pct > 0 and val_split_pct < 1:
+			    # create validation variables
+			    x_val_start = test_val_split
+			    x_val_end = self.data.shape[1] - self.ts_n_y_vals
+			    
+			    
+			    
+		    # run the process on the training data
+			x_reshaped, y_reshaped = self._chunk_data(self.data, start = 0, end = x_end, step = step, sample_size = sample_size, y_size = self.ts_n_y_vals)
+			
+			if self.debug == True: print("split here for test range {} to {}".format(x_test_start, x_test_end))
+			# get test data
+			x_reshaped_test, y_reshaped_test = self._chunk_data(self.data, start = x_test_start, end = x_test_end, step = step, sample_size = sample_size, y_size = self.ts_n_y_vals)
+			
+			
+			self.X_train = x_reshaped
+			self.X_test = y_reshaped
+			self.y_train = x_reshaped_test
+			self.y_test = y_reshaped_test
+			
+			if val_split_pct > 0 and val_split_pct < 1:
+				if self.debug == True: print("split here for val range {} to {}".format(x_val_start, x_val_end))
+				# create val data sets
+				x_reshaped_val, y_reshaped_val = self._chunk_data(self.data, start = x_val_start, end = x_val_end, step = step, sample_size = sample_size, y_size = self.ts_n_y_vals)
+				
+				# return x_reshaped, y_reshaped, x_reshaped_test, y_reshaped_test, x_reshaped_val, y_reshaped_val
+				self.X_valid = x_reshaped_val
+				self.y_valid = y_reshaped_val
+				
+			
 		elif split_type == 'overlap':
 			if self.debug == True: print("overlap split")
 		elif split_type == 'sample':
@@ -142,7 +225,6 @@ class keras_tools:
 				X_train, X_test, y_train, y_test = train_test_split(self.data, self.y_val, test_size=split_pct)
 				X_train, X_val, y_train, y_val = train_test_split(X_train, y_train, test_size=val_split_pct/(1-split_pct))
 			except AttributeError:
-				print(self.data.shape)
 				split_num, train_split_list, test_split_list, val_split_list = [], [], [], []
 				n_y_vals = self.data.shape[1]
 				#TODO: add seed
