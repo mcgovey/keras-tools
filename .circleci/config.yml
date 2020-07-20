@@ -19,7 +19,7 @@ jobs:
           command: make test #./manage.py test
           name: Test
       - codecov/upload:
-          file: coverage.xml
+          file: "coverage.xml"
 
 workflows:
   main:

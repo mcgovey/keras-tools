@@ -4,6 +4,8 @@ import numpy as np
 from sklearn.preprocessing import MinMaxScaler, StandardScaler
 from sklearn.model_selection import train_test_split
 
+import random
+
 class keras_tools:
 	def __init__(self, data:pd.DataFrame, \
 										y_val = None,
@@ -25,10 +27,14 @@ class keras_tools:
 
 		# check if y_val is populated
 		if y_val is not None:
+			
+			self.y_val = y_val #TODO: add logic to split on y value
+			
 			if isinstance(y_val, str):
 				print("passed y string")
 			elif isinstance(y_val, pd.DataFrame):
 				print("passed data frame")
+				
 		# check if ts_n_y_vals is populated
 		elif ts_n_y_vals is not None:
 			self.ts_n_y_vals = ts_n_y_vals
@@ -50,10 +56,10 @@ class keras_tools:
 		
 		self.X_train = ""
 		self.X_test = ""
-		self.X_val = ""
+		self.X_valid = ""
 		self.y_train = ""
 		self.y_test = ""
-		self.y_val = ""
+		self.y_valid = ""
 		
 		
 
@@ -90,10 +96,10 @@ class keras_tools:
 		# transform all the data in the data set
 		self.scaler.transform(self.X_train)
 		self.scaler.transform(self.X_test)
-		self.scaler.transform(self.X_val)
+		self.scaler.transform(self.X_valid)
 		self.scaler.transform(self.y_train)
 		self.scaler.transform(self.y_test)
-		self.scaler.transform(self.y_val)
+		self.scaler.transform(self.y_valid)
 			
 		if output_scaler: return self.scaler
 
@@ -130,11 +136,34 @@ class keras_tools:
 			if self.debug == True: print("overlap split")
 		elif split_type == 'sample':
 			if self.debug == True: print("sample split")
-			self.X_train = np.array(self.data)[1:]
+			
+			# try to split by y_val first, move on if it's not set
+			try:
+				X_train, X_test, y_train, y_test = train_test_split(self.data, self.y_val, test_size=split_pct)
+				X_train, X_val, y_train, y_val = train_test_split(X_train, y_train, test_size=val_split_pct/(1-split_pct))
+			except AttributeError:
+				print(self.data.shape)
+				split_num, train_split_list, test_split_list, val_split_list = [], [], [], []
+				n_y_vals = self.data.shape[1]
+				#TODO: add seed
+				for x in range(n_y_vals):
+					rand_num = random.uniform(0,1)
+					split_num.append(rand_num)
+					test_split_list.append(rand_num < split_pct)
+					val_split_list.append((rand_num - split_pct) < val_split_pct and rand_num >= split_pct)
+					
+				print(split_num)
+				print(val_split_list)
+					
+				train_split_list = [not c for c in test_split_list]
+				self.X_train = np.array(self.data.iloc[:,train_split_list])
+				self.X_test = np.array(self.data.iloc[:,test_split_list])
+				self.X_valid = np.array(self.data.iloc[:,val_split_list])
+				
+				print(f"train: {self.X_train.shape}; test: {self.X_test.shape}; valid: {self.X_valid.shape}")
+				
+			# self.X_train = np.array(self.data)[1:]
 			return self.X_train
-			# X_train, X_test, y_train, y_test = train_test_split(X, y, test_size=split_pct)
-			# X_train, X_val, y_train, y_val = train_test_split(X_train, y_train, test_size=val_split_pct/(1-split_pct))
-			# TODO: add deterministic parameter
 		else:
 			raise AttributeError(f"Type {split_type} specified is not valid")
 		if self.debug == True: print(self.data)

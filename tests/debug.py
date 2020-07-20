@@ -9,7 +9,7 @@ df = pd.read_csv('https://raw.githubusercontent.com/nytimes/covid-19-data/master
 helper = KerasTools.keras_tools(data = df, ts_n_y_vals = 5, debug=True)
 
 returndf = helper.train_test_split(split_type='sample')
-# print(returndf)
+print(returndf)
 # helper.scale(scaler = "minmax")
 
 # print(type(helper.X_train))
