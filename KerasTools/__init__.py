@@ -141,6 +141,9 @@ class keras_tools:
 	        return x_reshaped, y_reshaped
 	    else:
 	        return x_reshaped
+	        
+	def _seq_split(self):
+		pass
 
 	def train_test_split(self, 
 										split_type:str = 'sample',
@@ -163,7 +166,6 @@ class keras_tools:
 				Returns:
 
 		"""
-
 		#### basic parameter checking
 		if split_pct < 0 or split_pct > 1:
 			raise AttributeError(f"split_pct must be between 0 and 1. {split_pct} passed.") 
@@ -201,8 +203,8 @@ class keras_tools:
 			
 			
 			self.X_train = x_reshaped
-			self.X_test = y_reshaped
-			self.y_train = x_reshaped_test
+			self.y_train = y_reshaped
+			self.X_test = x_reshaped_test
 			self.y_test = y_reshaped_test
 			
 			if val_split_pct > 0 and val_split_pct < 1:
@@ -210,7 +212,6 @@ class keras_tools:
 				# create val data sets
 				x_reshaped_val, y_reshaped_val = self._chunk_data(self.data, start = x_val_start, end = x_val_end, step = step, sample_size = sample_size, y_size = self.ts_n_y_vals)
 				
-				# return x_reshaped, y_reshaped, x_reshaped_test, y_reshaped_test, x_reshaped_val, y_reshaped_val
 				self.X_valid = x_reshaped_val
 				self.y_valid = y_reshaped_val
 				

@@ -8,18 +8,19 @@ class TestRNN:
         self.sales_df = pd.read_csv('https://raw.githubusercontent.com/nytimes/covid-19-data/master/us.csv').iloc[:100,:]
         
         self.helper = ""
+        self.y_steps = 5
     
     def test_split(self):
         
         
-        self.helper = KerasTools.keras_tools(self.sales_df, ts_n_y_vals = 5, debug=False)
+        self.helper = KerasTools.keras_tools(self.sales_df, ts_n_y_vals = self.y_steps, debug=False)
         self.helper.train_test_split(split_type='sequential')
         
         
-        assert self.helper.ts_n_y_vals == 5
+        assert self.helper.ts_n_y_vals == self.y_steps
 
     def test_scale(self):
-        self.scale_helper = KerasTools.keras_tools(self.sales_df, ts_n_y_vals = 10, debug=False)
+        self.scale_helper = KerasTools.keras_tools(self.sales_df, ts_n_y_vals = self.y_steps, debug=False)
         
         
         with pytest.raises(AttributeError) as excinfo:
@@ -38,12 +39,24 @@ class TestRNN:
         # return scaler is true
         
     def test_seq_split(self):
-        self.scale_helper = KerasTools.keras_tools(self.sales_df, ts_n_y_vals = 5, debug=False)
+        self.scale_helper = KerasTools.keras_tools(self.sales_df, ts_n_y_vals = self.y_steps, debug=False)
         
         
-        self.scale_helper.train_test_split(split_type='sequential')
+        split_pct = 0.3
+        val_split_pct = 0.1
+        step = 1
+        sample_size = 1
         
-        assert self.scale_helper.X_train.shape
+        
+        self.scale_helper.train_test_split(split_type='sequential',
+										split_pct = split_pct,
+										val_split_pct = val_split_pct,
+										step = step,
+										sample_size = sample_size)
+										
+        
+        assert self.scale_helper.X_train.shape == ((1 - split_pct - val_split_pct) * self.sales_df.shape[0] - self.y_steps, sample_size, self.sales_df.shape[1])
+        assert self.scale_helper.y_train.shape == ((1 - split_pct - val_split_pct) * self.sales_df.shape[0] - self.y_steps, self.sales_df.shape[1], self.y_steps)
         
 
 ### Tests
