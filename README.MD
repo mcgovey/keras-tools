@@ -1,5 +1,6 @@
 # KerasTools
 [![mcgovey](https://circleci.com/gh/mcgovey/KerasTools.svg?style=shield)](https://github.com/mcgovey/kerastools)
+[![codecov](https://codecov.io/gh/mcgovey/KerasTools/branch/master/graph/badge.svg)](https://codecov.io/gh/mcgovey/KerasTools)
 
 This package contains helpful functions for preparing and understanding data output to be used in different Keras architectures.
 

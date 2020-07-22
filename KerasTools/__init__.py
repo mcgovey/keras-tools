@@ -57,6 +57,12 @@ class keras_tools:
 		# other variables used
 		self.scaler = "" # defined in scale()
 		
+		# split df data
+		self.train_df = ""
+		self.test_df = ""
+		self.valid_df = ""
+		
+		# transformed data as np
 		self.X_train = ""
 		self.X_test = ""
 		self.X_valid = ""
@@ -149,8 +155,6 @@ class keras_tools:
 										split_type:str = 'sample',
 										split_pct:float = 0.3,
 										val_split_pct:float = 0.1,
-										step:int = 1,
-										sample_size:int = 2,
 										fill_na:bool = True,
 										return_as_df:bool = False):
 		"""Create the base train-test-validation split for time-series data
@@ -159,8 +163,6 @@ class keras_tools:
 					split_type (str): Indication of the type of split to perform. Must be one of 'sequential', 'overlap', or 'sample'
 					split_pct (bool): 
 					val_split_pct (bool, optional): 
-					step (int): The number of steps before you take another sample (e.g. [1,3,5,6,7,9] and step of 2 would return x values of [[1,3][5,6][7,9]])
-					sample_size (int): The number of samples you want to take for each value (e.g. [1,3,5,6,7,9] and sample_size of 3 would return x values of [[1,3,5][3,5,6][5,6,7][6,7,9]])
 					fill_na (bool): Replace all NAs with 0's, typical prep. Default is True.
 					return_as_df (bool): Option to instead return the data as a dataframe (useful for debugging). Default is False.
 				Returns:
@@ -182,39 +184,27 @@ class keras_tools:
 			train_test_split_num = floor(self.data.shape[1] * (1 - split_pct - val_split_pct))
 			test_val_split = floor(self.data.shape[1] * (1 - val_split_pct))
 			if self.debug == True: print("Split at {} and {}".format(train_test_split_num, test_val_split))
-			x_end = train_test_split_num - self.ts_n_y_vals
-			#         print("x_end: {}".format(x_end))
-			# create test variables
-			x_test_start = train_test_split_num
-			x_test_end = test_val_split - self.ts_n_y_vals
-			if val_split_pct > 0 and val_split_pct < 1:
-			    # create validation variables
-			    x_val_start = test_val_split
-			    x_val_end = self.data.shape[1] - self.ts_n_y_vals
-			    
-			    
-			    
-		    # run the process on the training data
-			x_reshaped, y_reshaped = self._chunk_data(self.data, start = 0, end = x_end, step = step, sample_size = sample_size, y_size = self.ts_n_y_vals)
+
+			print(self.data, train_test_split_num)
 			
-			if self.debug == True: print("split here for test range {} to {}".format(x_test_start, x_test_end))
-			# get test data
-			x_reshaped_test, y_reshaped_test = self._chunk_data(self.data, start = x_test_start, end = x_test_end, step = step, sample_size = sample_size, y_size = self.ts_n_y_vals)
-			
-			
-			self.X_train = x_reshaped
-			self.y_train = y_reshaped
-			self.X_test = x_reshaped_test
-			self.y_test = y_reshaped_test
+			self.train_df = self.data.iloc[:, 0:train_test_split_num]
+			self.test_df = self.data.iloc[:, train_test_split_num:test_val_split]
 			
 			if val_split_pct > 0 and val_split_pct < 1:
-				if self.debug == True: print("split here for val range {} to {}".format(x_val_start, x_val_end))
-				# create val data sets
-				x_reshaped_val, y_reshaped_val = self._chunk_data(self.data, start = x_val_start, end = x_val_end, step = step, sample_size = sample_size, y_size = self.ts_n_y_vals)
+				# create validation variables
+				x_val_start = test_val_split
+				x_val_end = self.data.shape[1] - self.ts_n_y_vals
 				
-				self.X_valid = x_reshaped_val
-				self.y_valid = y_reshaped_val
-				
+				self.valid_df = self.data.iloc[:, test_val_split:]
+				return 1
+			else:
+				return 1
+			 
+			
+			
+			
+			
+
 			
 		elif split_type == 'overlap':
 			if self.debug == True: print("overlap split")
@@ -251,7 +241,44 @@ class keras_tools:
 			raise AttributeError(f"Type {split_type} specified is not valid")
 		if self.debug == True: print(self.data)
 
-	def transform_for_rnn(self, parameter_list):
+	def transform_for_rnn(self, 
+							step:int = 1,
+							sample_size:int = 1):
+		"""Transforms split data into format needed for RNN
+				
+				Args:
+					split_type (str): Indication of the type of split to perform. Must be one of 'sequential', 'overlap', or 'sample'
+					step (int): The number of steps before you take another sample (e.g. [1,3,5,6,7,9] and step of 2 would return x values of [[1,3][5,6][7,9]])
+					sample_size (int): The number of samples you want to take for each value (e.g. [1,3,5,6,7,9] and sample_size of 3 would return x values of [[1,3,5][3,5,6][5,6,7][6,7,9]])
+					return_as_df (bool): Option to instead return the data as a dataframe (useful for debugging). Default is False.
+				Returns:
+
+		"""
+		# x_end = train_test_split_num - self.ts_n_y_vals
+		# #         print("x_end: {}".format(x_end))
+		# # create test variables
+		# x_test_start = train_test_split_num
+		# x_test_end = test_val_split - self.ts_n_y_vals
+		# # run the process on the training data
+		# x_reshaped, y_reshaped = self._chunk_data(self.data, start = 0, end = x_end, step = step, sample_size = sample_size, y_size = self.ts_n_y_vals)
+		
+		# if self.debug == True: print("split here for test range {} to {}".format(x_test_start, x_test_end))
+		# # get test data
+		# x_reshaped_test, y_reshaped_test = self._chunk_data(self.data, start = x_test_start, end = x_test_end, step = step, sample_size = sample_size, y_size = self.ts_n_y_vals)
+		
+		
+		# self.X_train = x_reshaped
+		# self.y_train = y_reshaped
+		# self.X_test = x_reshaped_test
+		# self.y_test = y_reshaped_test
+		
+		# if val_split_pct > 0 and val_split_pct < 1:
+		# 	if self.debug == True: print("split here for val range {} to {}".format(x_val_start, x_val_end))
+		# 	# create val data sets
+		# 	x_reshaped_val, y_reshaped_val = self._chunk_data(self.data, start = x_val_start, end = x_val_end, step = step, sample_size = sample_size, y_size = self.ts_n_y_vals)
+			
+		# 	self.X_valid = x_reshaped_val
+		# 	self.y_valid = y_reshaped_val
 		pass
 
 	def get_input_shape(self, parameter_list):
