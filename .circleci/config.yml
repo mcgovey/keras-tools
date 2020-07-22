@@ -18,8 +18,12 @@ jobs:
       - run:
           command: make test #./manage.py test
           name: Test
-      - codecov/upload:
-          file: "coverage.xml"
+      # - codecov/upload:
+      #     file: "./coverage.xml"
+      - run:
+          name: Send to codecov
+          command: |
+            bash <(curl -s https://codecov.io/bash) -Z
 
 workflows:
   main:

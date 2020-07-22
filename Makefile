@@ -7,7 +7,7 @@ install:
 		
 test:
 	# python3 -m pytest -vv --cov=myrepolib tests/*.py -W ignore::ResourceWarning 
-	pytest --cov='.' tests/*.py 
+	pytest --cov=KerasTools tests/*.py 
 	
 lint:
 	pylint --disable=R,C KerasTools/__init__.py
