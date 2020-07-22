@@ -23,7 +23,7 @@ print(f"X_valid: {helper.X_valid.shape}")
 print(f"y_valid: {helper.X_valid.shape}")
 # helper.scale(scaler = "minmax")
 
-print(f"y_train: {helper.y_train}")
+# print(f"y_train: {helper.y_train}")
 
 print(df.shape)
 # print(type(helper.X_train))

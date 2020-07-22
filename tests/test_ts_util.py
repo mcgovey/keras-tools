@@ -57,6 +57,10 @@ class TestRNN:
         
         assert self.scale_helper.X_train.shape == ((1 - split_pct - val_split_pct) * self.sales_df.shape[0] - self.y_steps, sample_size, self.sales_df.shape[1])
         assert self.scale_helper.y_train.shape == ((1 - split_pct - val_split_pct) * self.sales_df.shape[0] - self.y_steps, self.sales_df.shape[1], self.y_steps)
+        assert self.scale_helper.X_test.shape == (split_pct * self.sales_df.shape[0] - self.y_steps, sample_size, self.sales_df.shape[1])
+        assert self.scale_helper.y_test.shape == (split_pct * self.sales_df.shape[0] - self.y_steps, self.sales_df.shape[1], self.y_steps)
+        assert self.scale_helper.X_valid.shape == (val_split_pct * self.sales_df.shape[0] - self.y_steps, sample_size, self.sales_df.shape[1])
+        assert self.scale_helper.y_valid.shape == (val_split_pct * self.sales_df.shape[0] - self.y_steps, self.sales_df.shape[1], self.y_steps)
         
 
 ### Tests
