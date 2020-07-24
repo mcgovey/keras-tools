@@ -204,6 +204,27 @@ class keras_tools:
 			
 		elif split_type == 'overlap':
 			if self.debug == True: print("overlap split")
+			
+			
+			train_test_split_num = floor((self.data.shape[1] - self.ts_n_y_vals) * (1 - split_pct - val_split_pct))
+			test_val_split = floor((self.data.shape[1] - self.ts_n_y_vals) * (1 - val_split_pct))
+			
+			# self._split_dfs()
+			
+			self.train_df = self.data.iloc[:, 0:(train_test_split_num + self.ts_n_y_vals)]
+			self.test_df = self.data.iloc[:, (train_test_split_num):(test_val_split + self.ts_n_y_vals)]
+			
+			if val_split_pct > 0 and val_split_pct < 1:
+				# create validation variables
+				x_val_start = test_val_split
+				x_val_end = self.data.shape[1] - self.ts_n_y_vals
+				
+				self.valid_df = self.data.iloc[:, test_val_split:]
+				if return_df: return self.train_df, self.test_df, self.valid_df
+			else:
+				if return_df: return self.train_df, self.test_df
+				
+				
 		elif split_type == 'sample':
 			if self.debug == True: print("sample split")
 			
@@ -222,26 +243,11 @@ class keras_tools:
 				self.valid_df = self.train_df.loc[self.train_df.sample(frac=val_split_pct, replace=False).index]
 				self.train_df = self.train_df.loc[~self.train_df.index.isin(self.valid_df.index)]
 				
-				# split_num, train_split_list, test_split_list, val_split_list = [], [], [], []
-				# n_y_vals = self.data.shape[1]
-				# #TODO: add seed
-				# for x in range(n_y_vals):
-				# 	rand_num = random.uniform(0,1)
-				# 	split_num.append(rand_num)
-				# 	test_split_list.append(rand_num < split_pct)
-				# 	val_split_list.append((rand_num - split_pct) < val_split_pct and rand_num >= split_pct)
+				if val_split_pct > 0 and val_split_pct < 1:
+					if return_df: return self.train_df, self.test_df, self.valid_df
+				else:
+					if return_df: return self.train_df, self.test_df
 					
-				# print(split_num)
-				# print(val_split_list)
-					
-				# train_split_list = [not c for c in test_split_list]
-				# self.X_train = np.array(self.data.iloc[:,train_split_list])
-				# self.X_test = np.array(self.data.iloc[:,test_split_list])
-				# self.X_valid = np.array(self.data.iloc[:,val_split_list])
-				
-				# print(f"train: {self.X_train.shape}; test: {self.X_test.shape}; valid: {self.X_valid.shape}")
-				
-			# self.X_train = np.array(self.data)[1:]
 			return self.X_train
 		else:
 			raise AttributeError(f"Type {split_type} specified is not valid")

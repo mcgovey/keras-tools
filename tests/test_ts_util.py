@@ -2,6 +2,7 @@ from .context import KerasTools
 
 import pandas as pd
 import numpy as np
+from math import floor, ceil
 import pytest
 
 class TestRNN:
@@ -74,6 +75,25 @@ class TestRNN:
 		assert self.scale_helper.train_df.shape == (np.round((1 - split_pct - val_split_pct) * self.sales_df.shape[1]), self.sales_df.shape[0])
 		assert self.scale_helper.test_df.shape == (np.round(split_pct * self.sales_df.shape[1]), self.sales_df.shape[0])
 		assert self.scale_helper.valid_df.shape == (np.round(val_split_pct * self.sales_df.shape[1]), self.sales_df.shape[0])
+		
+		
+	def test_overlap_split(self):
+		"""
+		Tests time-series function for overlapping time-series chunks.
+		"""
+		self.scale_helper = KerasTools.keras_tools(self.sales_df, ts_n_y_vals = self.y_steps, debug=False)
+		
+		split_pct = 0.3
+		val_split_pct = 0.1
+		
+		self.scale_helper.train_test_split(split_type='overlap',
+										split_pct = split_pct,
+										val_split_pct = val_split_pct)
+		
+		assert self.scale_helper.train_df.shape == (self.sales_df.shape[1], floor((1 - split_pct - val_split_pct) * (self.sales_df.shape[0] - self.y_steps) + self.y_steps))
+		assert self.scale_helper.test_df.shape == (self.sales_df.shape[1], floor(split_pct * (self.sales_df.shape[0] - self.y_steps) + self.y_steps))
+		assert self.scale_helper.valid_df.shape == (self.sales_df.shape[1], ceil(val_split_pct * (self.sales_df.shape[0] - self.y_steps) + self.y_steps)) #this is rounded up because if there are remaining values they fall in this bucket
+		
 		
 	# def test_seq_sample(self):
 	#     self.scale_helper = KerasTools.keras_tools(self.sales_df, ts_n_y_vals = self.y_steps, debug=False)

@@ -8,7 +8,7 @@ import pandas as pd
 df = pd.read_csv('https://raw.githubusercontent.com/nytimes/covid-19-data/master/us.csv').iloc[:100,:]
 helper = KerasTools.keras_tools(data = df, ts_n_y_vals = 5, debug=True)
 
-helper.train_test_split(split_type='sample')
+helper.train_test_split(split_type='overlap')
 
 print(f"test_df: {helper.test_df.shape}")
 print(f"train_df: {helper.train_df.shape}")
