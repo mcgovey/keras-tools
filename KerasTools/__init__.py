@@ -13,14 +13,15 @@ class keras_tools:
 	def __init__(self, data:pd.DataFrame, \
 										y_val = None,
 										ts_n_y_vals:int = None,
-										data_orientation = 'row',
+										data_orientation:str = 'row',
 										debug:bool = False):
 		"""Setup the keras-rnn-tools helper class with passed variables
 				
 				Args:
 					data (pd.DataFrame): base dataframe in pandas format.
+					y_val (str or pd.DataFrame, optional)
 					ts_n_y_vals (int): The number of y values to capture for each data set.
-					scaler (sklearn scaler or string, optional): optional scaling of data, passed as sklearn scaler or string of scaler type
+					data_orientation (string): string specifying whether the data frame that is passed will need to be pivoted or not ('row' or 'column', row gets transposed for time-series problems)
 					debug (bool): indication of whether to output print values for debugging
 		"""
 
@@ -156,7 +157,7 @@ class keras_tools:
 										split_pct:float = 0.3,
 										val_split_pct:float = 0.1,
 										fill_na:bool = True,
-										return_as_df:bool = False):
+										return_df:bool = False):
 		"""Create the base train-test-validation split for time-series data
 				
 				Args:
@@ -164,7 +165,7 @@ class keras_tools:
 					split_pct (bool): 
 					val_split_pct (bool, optional): 
 					fill_na (bool): Replace all NAs with 0's, typical prep. Default is True.
-					return_as_df (bool): Option to instead return the data as a dataframe (useful for debugging). Default is False.
+					return_df (bool): Option to instead return the data as a dataframe (useful for debugging). Default is False.
 				Returns:
 
 		"""
@@ -185,7 +186,7 @@ class keras_tools:
 			test_val_split = floor(self.data.shape[1] * (1 - val_split_pct))
 			if self.debug == True: print("Split at {} and {}".format(train_test_split_num, test_val_split))
 
-			print(self.data, train_test_split_num)
+			# print(self.data, train_test_split_num)
 			
 			self.train_df = self.data.iloc[:, 0:train_test_split_num]
 			self.test_df = self.data.iloc[:, train_test_split_num:test_val_split]
@@ -196,15 +197,10 @@ class keras_tools:
 				x_val_end = self.data.shape[1] - self.ts_n_y_vals
 				
 				self.valid_df = self.data.iloc[:, test_val_split:]
-				return 1
+				if return_df: return self.train_df, self.test_df, self.valid_df
 			else:
-				return 1
+				if return_df: return self.train_df, self.test_df
 			 
-			
-			
-			
-			
-
 			
 		elif split_type == 'overlap':
 			if self.debug == True: print("overlap split")
@@ -216,24 +212,34 @@ class keras_tools:
 				X_train, X_test, y_train, y_test = train_test_split(self.data, self.y_val, test_size=split_pct)
 				X_train, X_val, y_train, y_val = train_test_split(X_train, y_train, test_size=val_split_pct/(1-split_pct))
 			except AttributeError:
-				split_num, train_split_list, test_split_list, val_split_list = [], [], [], []
-				n_y_vals = self.data.shape[1]
-				#TODO: add seed
-				for x in range(n_y_vals):
-					rand_num = random.uniform(0,1)
-					split_num.append(rand_num)
-					test_split_list.append(rand_num < split_pct)
-					val_split_list.append((rand_num - split_pct) < val_split_pct and rand_num >= split_pct)
-					
-				print(split_num)
-				print(val_split_list)
-					
-				train_split_list = [not c for c in test_split_list]
-				self.X_train = np.array(self.data.iloc[:,train_split_list])
-				self.X_test = np.array(self.data.iloc[:,test_split_list])
-				self.X_valid = np.array(self.data.iloc[:,val_split_list])
+				# for time-series this method only works if you want to sample specific features and keep the full time-series
 				
-				print(f"train: {self.X_train.shape}; test: {self.X_test.shape}; valid: {self.X_valid.shape}")
+				# split out test_df then remove rows from train_df
+				self.test_df = self.data.loc[self.data.sample(frac=split_pct, replace=False).index]
+				self.train_df = self.data.loc[~self.data.index.isin(self.test_df.index)]
+				
+				# split out valid_df then remove the rows from train_df
+				self.valid_df = self.train_df.loc[self.train_df.sample(frac=val_split_pct, replace=False).index]
+				self.train_df = self.train_df.loc[~self.train_df.index.isin(self.valid_df.index)]
+				
+				# split_num, train_split_list, test_split_list, val_split_list = [], [], [], []
+				# n_y_vals = self.data.shape[1]
+				# #TODO: add seed
+				# for x in range(n_y_vals):
+				# 	rand_num = random.uniform(0,1)
+				# 	split_num.append(rand_num)
+				# 	test_split_list.append(rand_num < split_pct)
+				# 	val_split_list.append((rand_num - split_pct) < val_split_pct and rand_num >= split_pct)
+					
+				# print(split_num)
+				# print(val_split_list)
+					
+				# train_split_list = [not c for c in test_split_list]
+				# self.X_train = np.array(self.data.iloc[:,train_split_list])
+				# self.X_test = np.array(self.data.iloc[:,test_split_list])
+				# self.X_valid = np.array(self.data.iloc[:,val_split_list])
+				
+				# print(f"train: {self.X_train.shape}; test: {self.X_test.shape}; valid: {self.X_valid.shape}")
 				
 			# self.X_train = np.array(self.data)[1:]
 			return self.X_train
