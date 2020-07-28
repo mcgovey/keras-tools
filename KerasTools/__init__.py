@@ -121,22 +121,24 @@ class keras_tools:
 	    n = SimpleNamespace(**kwargs)
 	    np_arr_list, y_arr_list = [], []
 	    
+	    
+	    end = df.shape[1]
 	            
 	    # loop through each step and create a new np array to add to list
-	    for chunk_start in range(n.start, (n.end - n.sample_size + 1), n.step):
+	    for chunk_start in range(0, (end - n.sample_size - n.y_size + 1), n.step):
 	        
 	        # get a chunk of x values and store to array
-	        print("From {} to {}".format(chunk_start, chunk_start + n.sample_size))
+	        if self.debug == True: print("From {} to {}".format(chunk_start, chunk_start + n.sample_size))
 	        np_chunk = np.array(df.iloc[:,(chunk_start):(chunk_start + n.sample_size)])
 	        # add stored array to list
 	        np_arr_list.append(np_chunk)
 	        
 	        if output_labels:
-	            print("Y samples from {} to {}".format((chunk_start + n.sample_size), (chunk_start + n.sample_size + n.y_size)))
+	            if self.debug == True: print("Y samples from {} to {}".format((chunk_start + n.sample_size), (chunk_start + n.sample_size + n.y_size)))
 	            y_df_chunk = df.iloc[:,(chunk_start + n.sample_size):(chunk_start + n.sample_size + n.y_size)]
 	            y_np_chunk = np.array(y_df_chunk)
 	            y_arr_list.append(y_np_chunk)
-	        
+	    
 	    # stack all the x samples together
 	    np_stacked_chunks = np.stack(np_arr_list)
 	    x_reshaped = np.transpose(np_stacked_chunks, (0,2,1))
@@ -148,9 +150,6 @@ class keras_tools:
 	        return x_reshaped, y_reshaped
 	    else:
 	        return x_reshaped
-	        
-	def _seq_split(self):
-		pass
 
 	def train_test_split(self, 
 										split_type:str = 'sample',
@@ -253,45 +252,48 @@ class keras_tools:
 			raise AttributeError(f"Type {split_type} specified is not valid")
 		if self.debug == True: print(self.data)
 
-	def transform_for_rnn(self, 
+	def transform_ts(self, 
+							step:int = 1,
+							sample_size:int = 1):
+		"""Combines methods to create a full data set preppossing for time-series problems
+				
+			Args:
+				
+			Returns:
+
+		"""
+		pass
+	
+	def reshape_ts(self,
 							step:int = 1,
 							sample_size:int = 1):
 		"""Transforms split data into format needed for RNN
 				
-				Args:
-					split_type (str): Indication of the type of split to perform. Must be one of 'sequential', 'overlap', or 'sample'
-					step (int): The number of steps before you take another sample (e.g. [1,3,5,6,7,9] and step of 2 would return x values of [[1,3][5,6][7,9]])
-					sample_size (int): The number of samples you want to take for each value (e.g. [1,3,5,6,7,9] and sample_size of 3 would return x values of [[1,3,5][3,5,6][5,6,7][6,7,9]])
-					return_as_df (bool): Option to instead return the data as a dataframe (useful for debugging). Default is False.
-				Returns:
+			Args:
+				step (int): The number of steps before you take another sample (e.g. [1,3,5,6,7,9] and step of 2 would return x values of [[1,3][5,6][7,9]])
+				sample_size (int): The number of samples you want to take for each value (e.g. [1,3,5,6,7,9] and sample_size of 3 would return x values of [[1,3,5][3,5,6][5,6,7][6,7,9]])
+				input_data (tuple of object, optional): if train/test/validation data was not split using the class, data can be added directly here.
+				return_as_df (bool): Option to instead return the data as a dataframe (useful for debugging). Default is False.
+			Returns:
 
 		"""
-		# x_end = train_test_split_num - self.ts_n_y_vals
-		# #         print("x_end: {}".format(x_end))
-		# # create test variables
-		# x_test_start = train_test_split_num
-		# x_test_end = test_val_split - self.ts_n_y_vals
-		# # run the process on the training data
-		# x_reshaped, y_reshaped = self._chunk_data(self.data, start = 0, end = x_end, step = step, sample_size = sample_size, y_size = self.ts_n_y_vals)
+		x_reshaped, y_reshaped = self._chunk_data(self.train_df, step = step, sample_size = sample_size, y_size = self.ts_n_y_vals)
 		
-		# if self.debug == True: print("split here for test range {} to {}".format(x_test_start, x_test_end))
-		# # get test data
-		# x_reshaped_test, y_reshaped_test = self._chunk_data(self.data, start = x_test_start, end = x_test_end, step = step, sample_size = sample_size, y_size = self.ts_n_y_vals)
+		# get test data
+		x_reshaped_test, y_reshaped_test = self._chunk_data(self.test_df, step = step, sample_size = sample_size, y_size = self.ts_n_y_vals)
 		
 		
-		# self.X_train = x_reshaped
-		# self.y_train = y_reshaped
-		# self.X_test = x_reshaped_test
-		# self.y_test = y_reshaped_test
+		self.X_train = x_reshaped
+		self.y_train = y_reshaped
+		self.X_test = x_reshaped_test
+		self.y_test = y_reshaped_test
 		
-		# if val_split_pct > 0 and val_split_pct < 1:
-		# 	if self.debug == True: print("split here for val range {} to {}".format(x_val_start, x_val_end))
-		# 	# create val data sets
-		# 	x_reshaped_val, y_reshaped_val = self._chunk_data(self.data, start = x_val_start, end = x_val_end, step = step, sample_size = sample_size, y_size = self.ts_n_y_vals)
+		if len(self.valid_df)>1:
+			# create val data sets
+			x_reshaped_val, y_reshaped_val = self._chunk_data(self.valid_df, step = step, sample_size = sample_size, y_size = self.ts_n_y_vals)
 			
-		# 	self.X_valid = x_reshaped_val
-		# 	self.y_valid = y_reshaped_val
-		pass
+			self.X_valid = x_reshaped_val
+			self.y_valid = y_reshaped_val
 
 	def get_input_shape(self, parameter_list):
 		pass

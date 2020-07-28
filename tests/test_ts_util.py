@@ -94,26 +94,35 @@ class TestRNN:
 		assert self.scale_helper.test_df.shape == (self.sales_df.shape[1], floor(split_pct * (self.sales_df.shape[0] - self.y_steps) + self.y_steps))
 		assert self.scale_helper.valid_df.shape == (self.sales_df.shape[1], ceil(val_split_pct * (self.sales_df.shape[0] - self.y_steps) + self.y_steps)) #this is rounded up because if there are remaining values they fall in this bucket
 		
+	
 		
-	# def test_seq_sample(self):
-	#     self.scale_helper = KerasTools.keras_tools(self.sales_df, ts_n_y_vals = self.y_steps, debug=False)
-		
-		
-	#     step = 1
-	#     sample_size = 1
+	def test_reshape_ts(self):
+		self.scale_helper = KerasTools.keras_tools(self.sales_df, ts_n_y_vals = self.y_steps, debug=False)
 		
 		
-	#     self.scale_helper.rnn_transform(
-				# 						step = step,
-				# 						sample_size = sample_size)
+		split_pct = 0.3
+		val_split_pct = 0.1
+		
+		self.scale_helper.train_test_split(split_type='overlap',
+										split_pct = split_pct,
+										val_split_pct = val_split_pct)
+		
+		step = 1
+		sample_size = 1
+		
+		
+		self.scale_helper.reshape_ts(step = step,
+										sample_size = sample_size)
 										
 		
-	#     assert self.scale_helper.X_train.shape == ((1 - split_pct - val_split_pct) * self.sales_df.shape[0] - self.y_steps, sample_size, self.sales_df.shape[1])
-	#     assert self.scale_helper.y_train.shape == ((1 - split_pct - val_split_pct) * self.sales_df.shape[0] - self.y_steps, self.sales_df.shape[1], self.y_steps)
-	#     assert self.scale_helper.X_test.shape == (split_pct * self.sales_df.shape[0] - self.y_steps, sample_size, self.sales_df.shape[1])
-	#     assert self.scale_helper.y_test.shape == (split_pct * self.sales_df.shape[0] - self.y_steps, self.sales_df.shape[1], self.y_steps)
-	#     assert self.scale_helper.X_valid.shape == (val_split_pct * self.sales_df.shape[0] - self.y_steps, sample_size, self.sales_df.shape[1])
-	#     assert self.scale_helper.y_valid.shape == (val_split_pct * self.sales_df.shape[0] - self.y_steps, self.sales_df.shape[1], self.y_steps)
+		assert self.scale_helper.X_train.shape == (self.scale_helper.train_df.shape[1] - self.y_steps, sample_size, self.scale_helper.train_df.shape[0])
+		assert self.scale_helper.y_train.shape == (self.scale_helper.train_df.shape[1] - self.y_steps, self.scale_helper.train_df.shape[0], self.y_steps)
+		
+		assert self.scale_helper.X_test.shape == (self.scale_helper.test_df.shape[1] - self.y_steps, sample_size, self.scale_helper.test_df.shape[0])
+		assert self.scale_helper.y_test.shape == (self.scale_helper.test_df.shape[1] - self.y_steps, self.scale_helper.test_df.shape[0], self.y_steps)
+		
+		assert self.scale_helper.X_valid.shape == (self.scale_helper.valid_df.shape[1] - self.y_steps, sample_size, self.scale_helper.valid_df.shape[0])
+		assert self.scale_helper.y_valid.shape == (self.scale_helper.valid_df.shape[1] - self.y_steps, self.scale_helper.valid_df.shape[0], self.y_steps)
 		
 
 ### Tests
@@ -122,6 +131,10 @@ class TestRNN:
 # split_pct greater than 1
 # val_split_pct less than 0
 # val_split_pct greater than 1
+
+## reshape_ts
+# input_data added as parameter - train/test
+# input_data added as parameter - train/test/valid
 
 ## initialization
 # ts_n_y_vals
