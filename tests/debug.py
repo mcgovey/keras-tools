@@ -6,7 +6,10 @@ spec.loader.exec_module(KerasTools)
 import pandas as pd
 
 df = pd.read_csv('https://raw.githubusercontent.com/nytimes/covid-19-data/master/us.csv').iloc[:100,:]
-helper = KerasTools.keras_tools(data = df, ts_n_y_vals = 5, debug=True)
+
+n_y_vals = 5
+
+helper = KerasTools.keras_tools(data = df, ts_n_y_vals = n_y_vals, debug=True)
 
 helper.train_test_split(split_type='overlap')
 
@@ -17,7 +20,7 @@ print(f"test_df: {helper.test_df}")
 print(f"train_df: {helper.train_df}")
 
 
-step = 1
+step = 3
 sample_size = 1
 
 
@@ -31,6 +34,11 @@ print(f"y_test: {helper.y_test.shape}")
 print(f"X_valid: {helper.X_valid.shape}")
 print(f"y_valid: {helper.X_valid.shape}")
 
+
+for chunk_start in range(0, (helper.train_df.shape[1] - sample_size - n_y_vals + 1), step):
+    print(chunk_start)
+
+print(len(range(0, (helper.train_df.shape[1] - sample_size - n_y_vals + 1), step)))
 
 # helper.scale(scaler = "minmax")
 

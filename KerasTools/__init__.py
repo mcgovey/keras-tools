@@ -114,42 +114,51 @@ class keras_tools:
 		if output_scaler: return self.scaler
 		
 		
-	def _chunk_data (self, df, scaler = None, output_labels = True, **kwargs):
+	def _chunk_data (self, df, output_labels = True, **kwargs):
+		"""Helper to split data into x and y based on the previously split data
+				
+			Args:
+				df (object): Indication of the type of split to perform. Must be one of 'sequential', 'overlap', or 'sample'
+				output_labels (bool, optional): indicator for whether y values also need to be outputted after chunking
+				**kwargs: 
+			Returns:
+
+		"""
       
 
-	    # reassign the dictionary variables to variables in namespace for easy access
-	    n = SimpleNamespace(**kwargs)
-	    np_arr_list, y_arr_list = [], []
-	    
-	    
-	    end = df.shape[1]
-	            
-	    # loop through each step and create a new np array to add to list
-	    for chunk_start in range(0, (end - n.sample_size - n.y_size + 1), n.step):
-	        
-	        # get a chunk of x values and store to array
-	        if self.debug == True: print("From {} to {}".format(chunk_start, chunk_start + n.sample_size))
-	        np_chunk = np.array(df.iloc[:,(chunk_start):(chunk_start + n.sample_size)])
-	        # add stored array to list
-	        np_arr_list.append(np_chunk)
-	        
-	        if output_labels:
-	            if self.debug == True: print("Y samples from {} to {}".format((chunk_start + n.sample_size), (chunk_start + n.sample_size + n.y_size)))
-	            y_df_chunk = df.iloc[:,(chunk_start + n.sample_size):(chunk_start + n.sample_size + n.y_size)]
-	            y_np_chunk = np.array(y_df_chunk)
-	            y_arr_list.append(y_np_chunk)
-	    
-	    # stack all the x samples together
-	    np_stacked_chunks = np.stack(np_arr_list)
-	    x_reshaped = np.transpose(np_stacked_chunks, (0,2,1))
-	    
-	    if output_labels:
-	        # stack all the y samples together
-	        y_np_stacked_chunks = np.stack(y_arr_list)
-	        y_reshaped = y_np_stacked_chunks
-	        return x_reshaped, y_reshaped
-	    else:
-	        return x_reshaped
+		# reassign the dictionary variables to variables in namespace for easy access
+		n = SimpleNamespace(**kwargs)
+		np_arr_list, y_arr_list = [], []
+		
+		
+		end = df.shape[1]
+		        
+		# loop through each step and create a new np array to add to list
+		for chunk_start in range(0, (end - n.sample_size - n.y_size + 1), n.step):
+		    
+		    # get a chunk of x values and store to array
+		    if self.debug == True: print("From {} to {}".format(chunk_start, chunk_start + n.sample_size))
+		    np_chunk = np.array(df.iloc[:,(chunk_start):(chunk_start + n.sample_size)])
+		    # add stored array to list
+		    np_arr_list.append(np_chunk)
+		    
+		    if output_labels:
+		        if self.debug == True: print("Y samples from {} to {}".format((chunk_start + n.sample_size), (chunk_start + n.sample_size + n.y_size)))
+		        y_df_chunk = df.iloc[:,(chunk_start + n.sample_size):(chunk_start + n.sample_size + n.y_size)]
+		        y_np_chunk = np.array(y_df_chunk)
+		        y_arr_list.append(y_np_chunk)
+		
+		# stack all the x samples together
+		np_stacked_chunks = np.stack(np_arr_list)
+		x_reshaped = np.transpose(np_stacked_chunks, (0,2,1))
+		
+		if output_labels:
+		    # stack all the y samples together
+		    y_np_stacked_chunks = np.stack(y_arr_list)
+		    y_reshaped = y_np_stacked_chunks
+		    return x_reshaped, y_reshaped
+		else:
+		    return x_reshaped
 
 	def train_test_split(self, 
 										split_type:str = 'sample',
@@ -159,13 +168,13 @@ class keras_tools:
 										return_df:bool = False):
 		"""Create the base train-test-validation split for time-series data
 				
-				Args:
-					split_type (str): Indication of the type of split to perform. Must be one of 'sequential', 'overlap', or 'sample'
-					split_pct (bool): 
-					val_split_pct (bool, optional): 
-					fill_na (bool): Replace all NAs with 0's, typical prep. Default is True.
-					return_df (bool): Option to instead return the data as a dataframe (useful for debugging). Default is False.
-				Returns:
+			Args:
+				split_type (str): Indication of the type of split to perform. Must be one of 'sequential', 'overlap', or 'sample'
+				split_pct (bool): 
+				val_split_pct (bool, optional): 
+				fill_na (bool): Replace all NAs with 0's, typical prep. Default is True.
+				return_df (bool): Option to instead return the data as a dataframe (useful for debugging). Default is False.
+			Returns:
 
 		"""
 		#### basic parameter checking

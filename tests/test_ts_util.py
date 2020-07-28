@@ -107,22 +107,28 @@ class TestRNN:
 										split_pct = split_pct,
 										val_split_pct = val_split_pct)
 		
-		step = 1
-		sample_size = 1
+		# step = 1
+		# sample_size = 1
+		step_list = [1,3,5]
+		sample_size_list = [1,5,10]
 		
-		
-		self.scale_helper.reshape_ts(step = step,
-										sample_size = sample_size)
-										
-		
-		assert self.scale_helper.X_train.shape == (self.scale_helper.train_df.shape[1] - self.y_steps, sample_size, self.scale_helper.train_df.shape[0])
-		assert self.scale_helper.y_train.shape == (self.scale_helper.train_df.shape[1] - self.y_steps, self.scale_helper.train_df.shape[0], self.y_steps)
-		
-		assert self.scale_helper.X_test.shape == (self.scale_helper.test_df.shape[1] - self.y_steps, sample_size, self.scale_helper.test_df.shape[0])
-		assert self.scale_helper.y_test.shape == (self.scale_helper.test_df.shape[1] - self.y_steps, self.scale_helper.test_df.shape[0], self.y_steps)
-		
-		assert self.scale_helper.X_valid.shape == (self.scale_helper.valid_df.shape[1] - self.y_steps, sample_size, self.scale_helper.valid_df.shape[0])
-		assert self.scale_helper.y_valid.shape == (self.scale_helper.valid_df.shape[1] - self.y_steps, self.scale_helper.valid_df.shape[0], self.y_steps)
+		for step in step_list:
+			for sample_size in sample_size_list:
+				self.scale_helper.reshape_ts(step = step,
+												sample_size = sample_size)
+												
+				train_len = len(range(0,self.scale_helper.train_df.shape[1] - self.y_steps - sample_size + 1,step))
+				test_len = len(range(0,self.scale_helper.test_df.shape[1] - self.y_steps - sample_size + 1,step))
+				valid_len = len(range(0,self.scale_helper.valid_df.shape[1] - self.y_steps - sample_size + 1,step))
+				
+				assert self.scale_helper.X_train.shape == (train_len, sample_size, self.scale_helper.train_df.shape[0])
+				assert self.scale_helper.y_train.shape == (train_len, self.scale_helper.train_df.shape[0], self.y_steps)
+				
+				assert self.scale_helper.X_test.shape == (test_len, sample_size, self.scale_helper.test_df.shape[0])
+				assert self.scale_helper.y_test.shape == (test_len, self.scale_helper.test_df.shape[0], self.y_steps)
+				
+				assert self.scale_helper.X_valid.shape == (valid_len, sample_size, self.scale_helper.valid_df.shape[0])
+				assert self.scale_helper.y_valid.shape == (valid_len, self.scale_helper.valid_df.shape[0], self.y_steps)
 		
 
 ### Tests
