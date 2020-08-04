@@ -9,7 +9,11 @@ df = pd.read_csv('https://raw.githubusercontent.com/nytimes/covid-19-data/master
 
 n_y_vals = 5
 
-helper = KerasTools.keras_tools(data = df, ts_n_y_vals = n_y_vals, debug=True)
+helper = KerasTools.keras_tools(data = df, 
+                                    features = [1,2], 
+                                    index = 0, 
+                                    ts_n_y_vals = n_y_vals, 
+                                    debug=True)
 
 helper.train_test_split(split_type='overlap')
 
@@ -25,7 +29,8 @@ sample_size = 1
 
 
 helper.reshape_ts(step = step,
-					sample_size = sample_size)
+					sample_size = sample_size,
+					scaler = "minmax")
 
 print(f"X_train: {helper.X_train.shape}")
 print(f"y_train: {helper.y_train.shape}")
@@ -35,14 +40,15 @@ print(f"X_valid: {helper.X_valid.shape}")
 print(f"y_valid: {helper.X_valid.shape}")
 
 
-for chunk_start in range(0, (helper.train_df.shape[1] - sample_size - n_y_vals + 1), step):
-    print(chunk_start)
+# for chunk_start in range(0, (helper.train_df.shape[1] - sample_size - n_y_vals + 1), step):
+#     print(chunk_start)
 
-print(len(range(0, (helper.train_df.shape[1] - sample_size - n_y_vals + 1), step)))
+# print(len(range(0, (helper.train_df.shape[1] - sample_size - n_y_vals + 1), step)))
 
 # helper.scale(scaler = "minmax")
 
-# print(f"y_train: {helper.y_train}")
+print(f"X_train: {helper.X_train}")
+print(f"y_train: {helper.y_train}")
 
 # print(df.shape)
 # print(type(helper.X_train))

@@ -11,16 +11,22 @@ from types import SimpleNamespace
 
 class keras_tools:
 	def __init__(self, data:pd.DataFrame, \
-										y_val = None,
-										ts_n_y_vals:int = None,
-										data_orientation:str = 'row',
-										debug:bool = False):
+					index = None,
+					features:list = [],
+					y_val = None,
+					ts_n_y_vals:int = None,
+					data_orientation:str = 'row',
+					debug:bool = False):
 		"""Setup the keras-rnn-tools helper class with passed variables
 				
 				Args:
 					data (pd.DataFrame): base dataframe in pandas format.
-					y_val (str or pd.DataFrame, optional)
-					ts_n_y_vals (int): The number of y values to capture for each data set.
+					index (str or int): if data_orientation='row' then index number or column name that should be used as the index of the resulting dataframe,
+						if data_orientation='column' then row index of row that should be used as index
+					features(list): if data_orientation='row' then list of integer indices or column names of the columns that should be used as features,
+						if data_orientation='column' then list of integer indices that should be used as features
+					y_val (str or pd.DataFrame, optional): target variable index or column name, only used for non-timeseries problems.
+					ts_n_y_vals (int): The number of y values to capture for each data set, only used for timeseries problems.
 					data_orientation (string): string specifying whether the data frame that is passed will need to be pivoted or not ('row' or 'column', row gets transposed for time-series problems)
 					debug (bool): indication of whether to output print values for debugging
 		"""
@@ -44,6 +50,23 @@ class keras_tools:
 			self.ts_n_y_vals = ts_n_y_vals
 			if data_orientation == 'row':
 				if self.debug == True: print("Row-wise orientation")
+				# set index based on value passed
+				if index == None:
+					pass
+				elif isinstance(index, int):
+					self.data.index = self.data.iloc[:,index]
+				elif isinstance(index, str):
+					self.data.index = self.data[index]
+				else:
+					raise AttributeError(f"The index parameter passed ({index}) was not of type int or string")
+				
+				if all(isinstance(n, int) for n in features):
+					print("all passed as integer")
+					self.data = self.data.iloc[:,features]
+				elif all(isinstance(n, str) for n in features):
+					print("all passed as str")
+				else:
+					raise AttributeError(f"The features {features} were not consistently of type int or string")
 				self.data = self.data.T
 				if self.debug == True: print(self.data)
 				
@@ -73,9 +96,9 @@ class keras_tools:
 		
 		
 
-	def scale(self, 
-										scaler = None,
-										output_scaler:bool = False):
+	def _scale(self, 
+				scaler = None,
+				output_scaler:bool = False):
 		"""Scale the data in the data set. Prescribe the same scaling to the test and validation data sets.
 				
 				Args:
@@ -99,17 +122,18 @@ class keras_tools:
 		else:
 			if self.debug == True: print("no scaler passed")
 			raise AttributeError(f"Scaler type {scaler} was not sklearn scaler or string of ('minmax' or 'standard').")
+			
+		print(f"running for size {self.train_df.iloc[:,:-int(self.ts_n_y_vals)].shape}")
 		
 		# fit to training data
-		self.scaler.fit(self.X_train)
+		self.scaler.fit(self.train_df.iloc[:,:-int(self.ts_n_y_vals)].T)
 		
 		# transform all the data in the data set
-		self.scaler.transform(self.X_train)
-		self.scaler.transform(self.X_test)
-		self.scaler.transform(self.X_valid)
-		self.scaler.transform(self.y_train)
-		self.scaler.transform(self.y_test)
-		self.scaler.transform(self.y_valid)
+		print(self.train_df)
+		self.train_df = pd.DataFrame(self.scaler.transform(self.train_df.T).T)
+		print(self.train_df)
+		# self.test_df = self.scaler.transform(self.test_df.T).T
+		# self.valid_df = self.scaler.transform(self.valid_df.T).T
 			
 		if output_scaler: return self.scaler
 		
@@ -274,18 +298,24 @@ class keras_tools:
 		pass
 	
 	def reshape_ts(self,
-							step:int = 1,
-							sample_size:int = 1):
-		"""Transforms split data into format needed for RNN
+					step:int = 1,
+					sample_size:int = 1, 
+					scaler = None,
+					output_scaler:bool = False):
+		"""Transforms split data into format needed for RNN, optionally can scale the data as well.
 				
 			Args:
 				step (int): The number of steps before you take another sample (e.g. [1,3,5,6,7,9] and step of 2 would return x values of [[1,3][5,6][7,9]])
 				sample_size (int): The number of samples you want to take for each value (e.g. [1,3,5,6,7,9] and sample_size of 3 would return x values of [[1,3,5][3,5,6][5,6,7][6,7,9]])
 				input_data (tuple of object, optional): if train/test/validation data was not split using the class, data can be added directly here.
 				return_as_df (bool): Option to instead return the data as a dataframe (useful for debugging). Default is False.
+				scaler (sklearn scaler or string, optional): optional scaling of data, passed as sklearn scaler or string of scaler type (minmax or standard).
+				output_scaler (bool, optional): Include the fit scaler in the output. Default is False.
 			Returns:
 
 		"""
+		if scaler != None:
+			self._scale(scaler = scaler, output_scaler = output_scaler)
 		x_reshaped, y_reshaped = self._chunk_data(self.train_df, step = step, sample_size = sample_size, y_size = self.ts_n_y_vals)
 		
 		# get test data
@@ -303,6 +333,9 @@ class keras_tools:
 			
 			self.X_valid = x_reshaped_val
 			self.y_valid = y_reshaped_val
+			
+		if output_scaler == True:
+			return self.scaler
 
 	def get_input_shape(self, parameter_list):
 		pass

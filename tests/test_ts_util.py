@@ -12,6 +12,12 @@ class TestRNN:
 		
 		self.helper = ""
 		self.y_steps = 5
+		
+	def test_ts_setup_types(self):
+		# different features
+		# different y vals
+		# different indices
+		pass
 	
 	def test_split(self):
 		
@@ -22,7 +28,7 @@ class TestRNN:
 		
 		assert self.helper.ts_n_y_vals == self.y_steps
 
-	def test_scale(self):
+	def test_scale_str(self):
 		self.scale_helper = KerasTools.keras_tools(self.sales_df, ts_n_y_vals = self.y_steps, debug=False)
 		
 		
@@ -37,9 +43,12 @@ class TestRNN:
 		self.scale_helper.train_test_split(split_type='sample')
 		# self.scale_helper.scale(scaler = "minmax")
 		
-		# self.scale_helper.scale(scaler = "standard")
+		self.scale_helper.scale(scaler = "standard")
 		
 		# return scaler is true
+		
+	def test_scale_passed(self):
+		pass
 		
 	def test_seq_split(self):
 		"""
