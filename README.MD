@@ -1,4 +1,5 @@
 # KerasTools
+[![MIT Licence](https://badges.frapsoft.com/os/mit/mit.png?v=103)](https://opensource.org/licenses/mit-license.php)
 [![mcgovey](https://circleci.com/gh/mcgovey/KerasTools.svg?style=shield)](https://github.com/mcgovey/kerastools)
 [![codecov](https://codecov.io/gh/mcgovey/KerasTools/branch/master/graph/badge.svg)](https://codecov.io/gh/mcgovey/KerasTools)
 

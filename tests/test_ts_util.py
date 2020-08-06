@@ -17,44 +17,79 @@ class TestRNN:
 		# different features
 		# different y vals
 		# different indices
+		# different feature columns
 		pass
 	
 	def test_split(self):
 		
 		
-		self.helper = KerasTools.keras_tools(self.sales_df, ts_n_y_vals = self.y_steps, debug=False)
+		self.helper = KerasTools.keras_tools(self.sales_df,
+                                    features = [1,2], 
+                                    index = 0,  ts_n_y_vals = self.y_steps, debug=False)
 		self.helper.train_test_split(split_type='sequential')
 		
 		
 		assert self.helper.ts_n_y_vals == self.y_steps
 
+	@pytest.mark.scale
 	def test_scale_str(self):
-		self.scale_helper = KerasTools.keras_tools(self.sales_df, ts_n_y_vals = self.y_steps, debug=False)
+		self.scale_helper = KerasTools.keras_tools(self.sales_df, 
+                                    features = [1,2], 
+                                    index = 0, ts_n_y_vals = self.y_steps, debug=False)
 		
 		
-		with pytest.raises(AttributeError) as excinfo:
-			self.scale_helper.scale() #no scaler passed
+		# with pytest.raises(AttributeError) as excinfo:
+		# 	self.scale_helper.scale() #no scaler passed
 			
-		assert "Scaler type None" in str(excinfo.value)
+		# assert "Scaler type None" in str(excinfo.value)
 		
 		# created scaler passed minmax
+		
+		
+		step = 1
+		sample_size = 1
 		
 		# name of scaler passed
 		self.scale_helper.train_test_split(split_type='sample')
 		# self.scale_helper.scale(scaler = "minmax")
 		
-		self.scale_helper.scale(scaler = "standard")
+		return_val = self.scale_helper.reshape_ts(step = step,
+					sample_size = sample_size,
+					scaler = "standard",
+					output_scaler=True)
 		
+		assert return_val is not None
 		# return scaler is true
 		
 	def test_scale_passed(self):
 		pass
+	
+	def test_scale_not_defined(self):
+		self.scale_helper = KerasTools.keras_tools(self.sales_df, 
+                                    features = [1,2], 
+                                    index = 0, ts_n_y_vals = self.y_steps, debug=False)
+		step = 1
+		sample_size = 1
+		
+		# name of scaler passed
+		self.scale_helper.train_test_split(split_type='sample')
+		# self.scale_helper.scale(scaler = "minmax")
+		
+		with pytest.raises(AttributeError) as excinfo:
+			self.scale_helper.reshape_ts(step = step,
+					sample_size = sample_size,
+					scaler = "standad")  #misspelled scaler passed
+					
+		assert "Invalid Scaler Type Passed" in str(excinfo.value)
 		
 	def test_seq_split(self):
 		"""
 		Tests time-series function for creating distinct time-series splits in the data.
 		"""
-		self.scale_helper = KerasTools.keras_tools(self.sales_df, ts_n_y_vals = self.y_steps, debug=False)
+		feature_list = [1,2]
+		self.scale_helper = KerasTools.keras_tools(self.sales_df, 
+                                    features = feature_list, 
+                                    index = 0, ts_n_y_vals = self.y_steps, debug=False)
 		
 		split_pct = 0.3
 		val_split_pct = 0.1
@@ -63,16 +98,19 @@ class TestRNN:
 										split_pct = split_pct,
 										val_split_pct = val_split_pct)
 		
-		assert self.scale_helper.train_df.shape == (self.sales_df.shape[1], (1 - split_pct - val_split_pct) * self.sales_df.shape[0])
-		assert self.scale_helper.test_df.shape == (self.sales_df.shape[1], split_pct * self.sales_df.shape[0])
-		assert self.scale_helper.valid_df.shape == (self.sales_df.shape[1], val_split_pct * self.sales_df.shape[0])
+		assert self.scale_helper.train_df.shape == (len(feature_list), (1 - split_pct - val_split_pct) * self.sales_df.shape[0])
+		assert self.scale_helper.test_df.shape == (len(feature_list), split_pct * self.sales_df.shape[0])
+		assert self.scale_helper.valid_df.shape == (len(feature_list), val_split_pct * self.sales_df.shape[0])
 		
 		
 	def test_sample_split(self):
 		"""
 		Tests time-series function for sampling features.
 		"""
-		self.scale_helper = KerasTools.keras_tools(self.sales_df, ts_n_y_vals = self.y_steps, debug=False)
+		feature_list = [1,2]
+		self.scale_helper = KerasTools.keras_tools(self.sales_df, 
+                                    features = feature_list, 
+                                    index = 0, ts_n_y_vals = self.y_steps, debug=False)
 		
 		split_pct = 0.3
 		val_split_pct = 0.1
@@ -81,16 +119,19 @@ class TestRNN:
 										split_pct = split_pct,
 										val_split_pct = val_split_pct)
 										
-		assert self.scale_helper.train_df.shape == (np.round((1 - split_pct - val_split_pct) * self.sales_df.shape[1]), self.sales_df.shape[0])
-		assert self.scale_helper.test_df.shape == (np.round(split_pct * self.sales_df.shape[1]), self.sales_df.shape[0])
-		assert self.scale_helper.valid_df.shape == (np.round(val_split_pct * self.sales_df.shape[1]), self.sales_df.shape[0])
+		assert self.scale_helper.train_df.shape == (np.round((1 - split_pct - val_split_pct) * len(feature_list)), self.sales_df.shape[0])
+		assert self.scale_helper.test_df.shape == (np.round(split_pct * len(feature_list)), self.sales_df.shape[0])
+		assert self.scale_helper.valid_df.shape == (np.round(val_split_pct * len(feature_list)), self.sales_df.shape[0])
 		
 		
 	def test_overlap_split(self):
 		"""
 		Tests time-series function for overlapping time-series chunks.
 		"""
-		self.scale_helper = KerasTools.keras_tools(self.sales_df, ts_n_y_vals = self.y_steps, debug=False)
+		feature_list = [1,2]
+		self.scale_helper = KerasTools.keras_tools(self.sales_df, 
+                                    features = feature_list, 
+                                    index = 0, ts_n_y_vals = self.y_steps, debug=False)
 		
 		split_pct = 0.3
 		val_split_pct = 0.1
@@ -99,14 +140,19 @@ class TestRNN:
 										split_pct = split_pct,
 										val_split_pct = val_split_pct)
 		
-		assert self.scale_helper.train_df.shape == (self.sales_df.shape[1], floor((1 - split_pct - val_split_pct) * (self.sales_df.shape[0] - self.y_steps) + self.y_steps))
-		assert self.scale_helper.test_df.shape == (self.sales_df.shape[1], floor(split_pct * (self.sales_df.shape[0] - self.y_steps) + self.y_steps))
-		assert self.scale_helper.valid_df.shape == (self.sales_df.shape[1], ceil(val_split_pct * (self.sales_df.shape[0] - self.y_steps) + self.y_steps)) #this is rounded up because if there are remaining values they fall in this bucket
+		assert self.scale_helper.train_df.shape == (len(feature_list), floor((1 - split_pct - val_split_pct) * (self.sales_df.shape[0] - self.y_steps) + self.y_steps))
+		assert self.scale_helper.test_df.shape == (len(feature_list), floor(split_pct * (self.sales_df.shape[0] - self.y_steps) + self.y_steps))
+		assert self.scale_helper.valid_df.shape == (len(feature_list), ceil(val_split_pct * (self.sales_df.shape[0] - self.y_steps) + self.y_steps)) #this is rounded up because if there are remaining values they fall in this bucket
 		
 	
-		
-	def test_reshape_ts(self):
-		self.scale_helper = KerasTools.keras_tools(self.sales_df, ts_n_y_vals = self.y_steps, debug=False)
+	
+	@pytest.mark.parametrize("step", [1, 3, 5])
+	@pytest.mark.parametrize("sample_size", [1, 5, 10])
+	
+	def test_reshape_ts(self, step, sample_size):
+		self.scale_helper = KerasTools.keras_tools(self.sales_df, 
+                                    features = [1,2], 
+                                    index = 0, ts_n_y_vals = self.y_steps, debug=False)
 		
 		
 		split_pct = 0.3
@@ -118,26 +164,22 @@ class TestRNN:
 		
 		# step = 1
 		# sample_size = 1
-		step_list = [1,3,5]
-		sample_size_list = [1,5,10]
 		
-		for step in step_list:
-			for sample_size in sample_size_list:
-				self.scale_helper.reshape_ts(step = step,
-												sample_size = sample_size)
-												
-				train_len = len(range(0,self.scale_helper.train_df.shape[1] - self.y_steps - sample_size + 1,step))
-				test_len = len(range(0,self.scale_helper.test_df.shape[1] - self.y_steps - sample_size + 1,step))
-				valid_len = len(range(0,self.scale_helper.valid_df.shape[1] - self.y_steps - sample_size + 1,step))
-				
-				assert self.scale_helper.X_train.shape == (train_len, sample_size, self.scale_helper.train_df.shape[0])
-				assert self.scale_helper.y_train.shape == (train_len, self.scale_helper.train_df.shape[0], self.y_steps)
-				
-				assert self.scale_helper.X_test.shape == (test_len, sample_size, self.scale_helper.test_df.shape[0])
-				assert self.scale_helper.y_test.shape == (test_len, self.scale_helper.test_df.shape[0], self.y_steps)
-				
-				assert self.scale_helper.X_valid.shape == (valid_len, sample_size, self.scale_helper.valid_df.shape[0])
-				assert self.scale_helper.y_valid.shape == (valid_len, self.scale_helper.valid_df.shape[0], self.y_steps)
+		self.scale_helper.reshape_ts(step = step,
+										sample_size = sample_size)
+										
+		train_len = len(range(0,self.scale_helper.train_df.shape[1] - self.y_steps - sample_size + 1,step))
+		test_len = len(range(0,self.scale_helper.test_df.shape[1] - self.y_steps - sample_size + 1,step))
+		valid_len = len(range(0,self.scale_helper.valid_df.shape[1] - self.y_steps - sample_size + 1,step))
+		
+		assert self.scale_helper.X_train.shape == (train_len, sample_size, self.scale_helper.train_df.shape[0])
+		assert self.scale_helper.y_train.shape == (train_len, self.scale_helper.train_df.shape[0], self.y_steps)
+		
+		assert self.scale_helper.X_test.shape == (test_len, sample_size, self.scale_helper.test_df.shape[0])
+		assert self.scale_helper.y_test.shape == (test_len, self.scale_helper.test_df.shape[0], self.y_steps)
+		
+		assert self.scale_helper.X_valid.shape == (valid_len, sample_size, self.scale_helper.valid_df.shape[0])
+		assert self.scale_helper.y_valid.shape == (valid_len, self.scale_helper.valid_df.shape[0], self.y_steps)
 		
 
 ### Tests

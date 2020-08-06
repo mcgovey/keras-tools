@@ -220,15 +220,17 @@ class keras_tools:
 
 			# print(self.data, train_test_split_num)
 			
-			self.train_df = self.data.iloc[:, 0:train_test_split_num]
-			self.test_df = self.data.iloc[:, train_test_split_num:test_val_split]
+			self.train_df = np.array(self.data.iloc[:, 0:train_test_split_num])
+			self.test_df = np.array(self.data.iloc[:, train_test_split_num:test_val_split])
+			
+			if self.debug: print(f"train_df: {self.train_df}")
 			
 			if val_split_pct > 0 and val_split_pct < 1:
 				# create validation variables
 				x_val_start = test_val_split
 				x_val_end = self.data.shape[1] - self.ts_n_y_vals
 				
-				self.valid_df = self.data.iloc[:, test_val_split:]
+				self.valid_df = np.array(self.data.iloc[:, test_val_split:])
 				if return_df: return self.train_df, self.test_df, self.valid_df
 			else:
 				if return_df: return self.train_df, self.test_df
