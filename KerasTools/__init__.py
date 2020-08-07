@@ -333,7 +333,16 @@ class keras_tools:
 	def get_input_shape(self):
 		return self.X_train.shape[1:3]
 
-	def unscale(self):
+	def unscale(self,
+					prediction_arr:object):
+		"""Given an array, unscales the data back to original numeric scale
+		
+		Args:
+			prediction_arr (object): 2D array of variables to be unscaled (if array is 3D from predictions, use shape_predictions() first)
+		"""
+		pass
+	
+	def shape_predictions(self):
 		pass
 
 	def model_summary(self, 
@@ -353,31 +362,35 @@ class keras_tools:
 		
 		print(model.summary())
 		
-		#loop and store all variable from the history
-		acc = history.history['mse']
-		loss = history.history['loss']
-		mse = history.history['mse']
-		val_mse = history.history['val_mse']
-		mae = history.history['mae']
-		val_mae = history.history['val_mae']
-		mape = history.history['mape']
-		val_mape = history.history['val_mape']
-		
-		# let's plot the performance curve
-		
-		plt.figure();
-		fig, axes = plt.subplots(nrows=1, ncols=3, figsize=(12, 7))
-		axes[0].plot(mse, label = 'Train mse')
-		axes[0].plot(val_mse, label = 'Test mse')
-		axes[1].plot(mae, label='mae')
-		axes[1].plot(val_mae, label='Test mae')
-		axes[2].plot(mape, label='mape')
-		axes[2].plot(val_mape, label='Test mape')
-		axes[0].legend()
-		axes[1].legend()
-		axes[2].legend()
-		
-		plt.show()
+		if show_charts:
+			
+			#TODO: add dynamic loop over variables
+			pass
+			# #loop and store all variable from the history
+			# acc = history.history['mse']
+			# loss = history.history['loss']
+			# mse = history.history['mse']
+			# val_mse = history.history['val_mse']
+			# mae = history.history['mae']
+			# val_mae = history.history['val_mae']
+			# mape = history.history['mape']
+			# val_mape = history.history['val_mape']
+			
+			# # let's plot the performance curve
+			
+			# plt.figure();
+			# fig, axes = plt.subplots(nrows=1, ncols=3, figsize=(12, 7))
+			# axes[0].plot(mse, label = 'Train mse')
+			# axes[0].plot(val_mse, label = 'Test mse')
+			# axes[1].plot(mae, label='mae')
+			# axes[1].plot(val_mae, label='Test mae')
+			# axes[2].plot(mape, label='mape')
+			# axes[2].plot(val_mape, label='Test mape')
+			# axes[0].legend()
+			# axes[1].legend()
+			# axes[2].legend()
+			
+			# plt.show()
 
 	def transform_ts(self, 
 						split_type:str = 'sample',
