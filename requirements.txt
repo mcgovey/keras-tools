@@ -4,3 +4,5 @@ sklearn
 pylint
 pytest
 pytest-cov
+
+matplotlib

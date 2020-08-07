@@ -183,6 +183,9 @@ class TestRNN:
 		
 
 	def test_get_input_shape(self):
+		"""
+		Tests that input_shape matches expected shape from X_train
+		"""
 		self.scale_helper = KerasTools.keras_tools(self.sales_df, 
                                     features = [1,2], 
                                     index = 0, ts_n_y_vals = self.y_steps, debug=False)
@@ -203,7 +206,11 @@ class TestRNN:
 										
 		input_shape = self.scale_helper.get_input_shape()
 		
-		assert self.scale_helper.X_train[1:3] == input_shape
+		np.testing.assert_array_equal(self.scale_helper.X_train.shape[1:3], input_shape)
+		
+	def test_model_summary(self):
+		# will need to create and train a NN to get model and history objects for testing
+		pass
 		
 ### Tests
 ## train_test_split

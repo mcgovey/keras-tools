@@ -4,6 +4,9 @@ import numpy as np
 from sklearn.preprocessing import MinMaxScaler, StandardScaler
 from sklearn.model_selection import train_test_split
 
+#matplotlib
+import matplotlib.pyplot as plt
+
 # libraries used for train test split
 import random
 from math import floor
@@ -286,25 +289,6 @@ class keras_tools:
 		else:
 			raise AttributeError(f"Type {split_type} specified is not valid")
 		if self.debug == True: print(self.data)
-
-	def transform_ts(self, 
-						split_type:str = 'sample',
-						split_pct:float = 0.3,
-						val_split_pct:float = 0.1,
-						fill_na:bool = True,
-						step:int = 1,
-						sample_size:int = 1, 
-						scaler = None,
-						output_scaler:bool = False,
-						return_df:bool = False):
-		"""Combines methods to create a full data set preppossing for time-series problems
-				
-			Args:
-				
-			Returns:
-
-		"""
-		pass
 	
 	def reshape_ts(self,
 					step:int = 1,
@@ -352,5 +336,64 @@ class keras_tools:
 	def unscale(self):
 		pass
 
-	def model_summary(self):
+	def model_summary(self, 
+						model:object, 
+						history:object, 
+						show_charts:bool = True):
+		# function for verifying results
+		"""Transforms split data into format needed for RNN, optionally can scale the data as well.
+				
+			Args:
+				model (object): Saved model of TensorFlow or Keras object
+				history (object): History from training model.fit
+				show_charts (bool): Flag to decide if charts should be outputted
+			Returns:
+
+		"""
+		
+		print(model.summary())
+		
+		#loop and store all variable from the history
+		acc = history.history['mse']
+		loss = history.history['loss']
+		mse = history.history['mse']
+		val_mse = history.history['val_mse']
+		mae = history.history['mae']
+		val_mae = history.history['val_mae']
+		mape = history.history['mape']
+		val_mape = history.history['val_mape']
+		
+		# let's plot the performance curve
+		
+		plt.figure();
+		fig, axes = plt.subplots(nrows=1, ncols=3, figsize=(12, 7))
+		axes[0].plot(mse, label = 'Train mse')
+		axes[0].plot(val_mse, label = 'Test mse')
+		axes[1].plot(mae, label='mae')
+		axes[1].plot(val_mae, label='Test mae')
+		axes[2].plot(mape, label='mape')
+		axes[2].plot(val_mape, label='Test mape')
+		axes[0].legend()
+		axes[1].legend()
+		axes[2].legend()
+		
+		plt.show()
+
+	def transform_ts(self, 
+						split_type:str = 'sample',
+						split_pct:float = 0.3,
+						val_split_pct:float = 0.1,
+						fill_na:bool = True,
+						step:int = 1,
+						sample_size:int = 1, 
+						scaler = None,
+						output_scaler:bool = False,
+						return_df:bool = False):
+		"""Combines methods to create a full data set preppossing for time-series problems
+				
+			Args:
+				
+			Returns:
+
+		"""
 		pass
