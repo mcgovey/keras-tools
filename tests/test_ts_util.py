@@ -182,6 +182,29 @@ class TestRNN:
 		assert self.scale_helper.y_valid.shape == (valid_len, self.scale_helper.valid_df.shape[0], self.y_steps)
 		
 
+	def test_get_input_shape(self):
+		self.scale_helper = KerasTools.keras_tools(self.sales_df, 
+                                    features = [1,2], 
+                                    index = 0, ts_n_y_vals = self.y_steps, debug=False)
+		
+		
+		split_pct = 0.3
+		val_split_pct = 0.1
+		
+		self.scale_helper.train_test_split(split_type='overlap',
+										split_pct = split_pct,
+										val_split_pct = val_split_pct)
+		
+		step = 1
+		sample_size = 1
+		
+		self.scale_helper.reshape_ts(step = step,
+										sample_size = sample_size)
+										
+		input_shape = self.scale_helper.get_input_shape()
+		
+		assert self.scale_helper.X_train[1:3] == input_shape
+		
 ### Tests
 ## train_test_split
 # split_pct less than 0

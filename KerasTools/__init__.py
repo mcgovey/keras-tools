@@ -288,8 +288,15 @@ class keras_tools:
 		if self.debug == True: print(self.data)
 
 	def transform_ts(self, 
-							step:int = 1,
-							sample_size:int = 1):
+						split_type:str = 'sample',
+						split_pct:float = 0.3,
+						val_split_pct:float = 0.1,
+						fill_na:bool = True,
+						step:int = 1,
+						sample_size:int = 1, 
+						scaler = None,
+						output_scaler:bool = False,
+						return_df:bool = False):
 		"""Combines methods to create a full data set preppossing for time-series problems
 				
 			Args:
@@ -339,10 +346,10 @@ class keras_tools:
 		if output_scaler == True:
 			return self.scaler
 
-	def get_input_shape(self, parameter_list):
-		pass
+	def get_input_shape(self):
+		return self.X_train.shape[1:3]
 
-	def unscale(self, parameter_list):
+	def unscale(self):
 		pass
 
 	def model_summary(self):
