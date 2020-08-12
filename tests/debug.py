@@ -5,12 +5,15 @@ spec.loader.exec_module(KerasTools)
 
 import pandas as pd
 
+from tensorflow.keras import models, layers, callbacks, Input
+
 df = pd.read_csv('https://raw.githubusercontent.com/nytimes/covid-19-data/master/us.csv').iloc[:100,:]
 
 n_y_vals = 5
+feature_list = [1,2]
 
 helper = KerasTools.keras_tools(data = df, 
-                                    features = [1,2], 
+                                    features = feature_list, 
                                     index = 0, 
                                     ts_n_y_vals = n_y_vals, 
                                     debug=True)
@@ -40,15 +43,27 @@ print(f"X_valid: {helper.X_valid.shape}")
 print(f"y_valid: {helper.X_valid.shape}")
 
 
-# for chunk_start in range(0, (helper.train_df.shape[1] - sample_size - n_y_vals + 1), step):
-#     print(chunk_start)
+input_shape = helper.get_input_shape()
 
-# print(len(range(0, (helper.train_df.shape[1] - sample_size - n_y_vals + 1), step)))
+timeseries_input = Input(shape=input_shape, dtype='float32', name='timeseries')
 
-# helper.scale(scaler = "minmax")
+ts_layer = layers.LSTM(units=16, 
+                       activation='relu')(timeseries_input)
+                       
+output = layers.Dense(len(feature_list) * n_y_vals, activation=None)(ts_layer)
+output = layers.Reshape((len(feature_list), n_y_vals))(output)
 
-print(f"X_train: {helper.X_train}")
-print(f"y_train: {helper.y_train}")
-
-# print(df.shape)
-# print(type(helper.X_train))
+model = models.Model(timeseries_input, output)
+model.compile(optimizer='adam',
+             loss='mse',
+             metrics=['mse', 'mae', 'mape'])
+             
+history = model.fit(helper.X_train, 
+                        helper.y_train,
+                        validation_data = (helper.X_test, helper.y_test),
+                        steps_per_epoch=5,
+                        validation_steps = 5,
+                        epochs=10,
+                        verbose=1)
+# print(f"X_train: {helper.X_train}")
+# print(f"y_train: {helper.y_train}")

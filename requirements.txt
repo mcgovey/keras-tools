@@ -6,3 +6,5 @@ pytest
 pytest-cov
 
 matplotlib
+
+tensorflow==2.2
