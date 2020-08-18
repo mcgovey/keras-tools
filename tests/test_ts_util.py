@@ -32,7 +32,7 @@ class TestRNN:
 		
 		assert self.helper.ts_n_y_vals == self.y_steps
 
-	@pytest.mark.scale
+	# @pytest.mark.scale
 	def test_scale_str(self):
 		self.scale_helper = KerasTools.keras_tools(self.sales_df, 
                                     features = [1,2], 
@@ -210,7 +210,7 @@ class TestRNN:
 		np.testing.assert_array_equal(self.scale_helper.X_train.shape[1:3], input_shape)
 		
 	
-	@pytest.mark.focus
+	# @pytest.mark.focus
 	def test_model_summary(self, capsys):
 		""" create and train a NN to get model and history objects for testing model_summary method
 		"""
