@@ -65,5 +65,8 @@ history = model.fit(helper.X_train,
                         validation_steps = 5,
                         epochs=10,
                         verbose=1)
+                        
+helper.model_summary(model, history, show_charts=True)
 # print(f"X_train: {helper.X_train}")
 # print(f"y_train: {helper.y_train}")
+

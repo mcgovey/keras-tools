@@ -4,6 +4,7 @@ import pandas as pd
 import numpy as np
 from math import floor, ceil
 import pytest
+from tensorflow.keras import models, layers, callbacks, Input
 
 class TestRNN:
 	def setup(self):
@@ -208,10 +209,70 @@ class TestRNN:
 		
 		np.testing.assert_array_equal(self.scale_helper.X_train.shape[1:3], input_shape)
 		
-	def test_model_summary(self):
-		# will need to create and train a NN to get model and history objects for testing
-		pass
+	
+	@pytest.mark.focus
+	def test_model_summary(self, capsys):
+		""" create and train a NN to get model and history objects for testing model_summary method
+		"""
+		feature_list = [1,2]
+		self.scale_helper = KerasTools.keras_tools(self.sales_df, 
+                                    features = feature_list, 
+                                    index = 0, ts_n_y_vals = self.y_steps, debug=False)
 		
+		
+		split_pct = 0.3
+		val_split_pct = 0.1
+		
+		self.scale_helper.train_test_split(split_type='overlap',
+										split_pct = split_pct,
+										val_split_pct = val_split_pct)
+		
+		step = 1
+		sample_size = 1
+		
+		self.scale_helper.reshape_ts(step = step,
+										sample_size = sample_size)
+										
+		# create model
+		model, history = self.create_model(feature_list)
+		
+		self.scale_helper.model_summary(model, history, show_charts=True)
+		
+		captured = capsys.readouterr()
+		
+		print(captured.out)
+		
+		assert 'Model: ' in captured.out
+		
+		
+	def create_model(self, feature_list):
+		"""Create a keras model to be used in tests"""
+		
+		input_shape = self.scale_helper.get_input_shape()
+
+		timeseries_input = Input(shape=input_shape, dtype='float32', name='timeseries')
+		
+		ts_layer = layers.LSTM(units=16, 
+								activation='relu')(timeseries_input)
+		
+		                       
+		output = layers.Dense(len(feature_list) * self.y_steps, activation=None)(ts_layer)
+		output = layers.Reshape((len(feature_list), self.y_steps))(output)
+		
+		model = models.Model(timeseries_input, output)
+		model.compile(optimizer='adam',
+						loss='mse',
+						metrics=['mse', 'mae', 'mape'])
+		             
+		history = model.fit(self.scale_helper.X_train, 
+							self.scale_helper.y_train,
+							validation_data = (self.scale_helper.X_test, self.scale_helper.y_test),
+							steps_per_epoch=5,
+							validation_steps = 5,
+							epochs=10,
+							verbose=0)
+		
+		return model, history
 ### Tests
 ## train_test_split
 # split_pct less than 0

@@ -347,14 +347,14 @@ class keras_tools:
 
 	def model_summary(self, 
 						model:object, 
-						history:object, 
+						history:object = None, 
 						show_charts:bool = True):
 		# function for verifying results
 		"""Transforms split data into format needed for RNN, optionally can scale the data as well.
 				
 			Args:
 				model (object): Saved model of TensorFlow or Keras object
-				history (object): History from training model.fit
+				history (object, optional): History from training model.fit
 				show_charts (bool): Flag to decide if charts should be outputted
 			Returns:
 
@@ -363,34 +363,39 @@ class keras_tools:
 		print(model.summary())
 		
 		if show_charts:
-			
-			#TODO: add dynamic loop over variables
-			pass
-			# #loop and store all variable from the history
-			# acc = history.history['mse']
-			# loss = history.history['loss']
-			# mse = history.history['mse']
-			# val_mse = history.history['val_mse']
-			# mae = history.history['mae']
-			# val_mae = history.history['val_mae']
-			# mape = history.history['mape']
-			# val_mape = history.history['val_mape']
-			
-			# # let's plot the performance curve
-			
-			# plt.figure();
-			# fig, axes = plt.subplots(nrows=1, ncols=3, figsize=(12, 7))
-			# axes[0].plot(mse, label = 'Train mse')
-			# axes[0].plot(val_mse, label = 'Test mse')
-			# axes[1].plot(mae, label='mae')
-			# axes[1].plot(val_mae, label='Test mae')
-			# axes[2].plot(mape, label='mape')
-			# axes[2].plot(val_mape, label='Test mape')
-			# axes[0].legend()
-			# axes[1].legend()
-			# axes[2].legend()
-			
-			# plt.show()
+			if history == None:
+				raise AttributeError("'history' attribute missing in method call. Pass stored values of model.fit.")
+			else:
+				test_metrics, val_metrics = {}, {}
+				num_metrics = 0
+				
+				# seperate test metrics from validation metrics
+				for key, val in history.history.items():
+					if key[:4] != 'val_':
+						test_metrics[key] = val
+						num_metrics += 1
+					else:
+						val_metrics[key] = val
+				
+				
+				# plot performance curves
+				plt.figure();
+				fig, axes = plt.subplots(nrows=1, ncols=num_metrics, figsize=(12, 7))
+				
+				chart_idx = 0
+				# loop through all test metrics, look for validation metrics as well and plot to charts
+				for key, val in test_metrics.items():
+					axes[chart_idx].plot(val, label = key)
+					val_name = "".join(['val_',key])
+					if val_name in val_metrics:
+						axes[chart_idx].plot(val_metrics[val_name], label = val_name)
+					axes[chart_idx].legend()
+					chart_idx += 1
+				
+				# output to file if debugging
+				if self.debug == True: fig.savefig('test_data/sample_chart.png')
+				# try to show plot
+				plt.show()
 
 	def transform_ts(self, 
 						split_type:str = 'sample',
