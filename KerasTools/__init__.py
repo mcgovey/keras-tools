@@ -397,7 +397,7 @@ class keras_tools:
 				# try to show plot
 				plt.show()
 
-	def transform_ts(self, 
+	def ts_transform(self, 
 						split_type:str = 'sample',
 						split_pct:float = 0.3,
 						val_split_pct:float = 0.1,
@@ -414,4 +414,12 @@ class keras_tools:
 			Returns:
 
 		"""
-		pass
+		
+		# run train-test split
+		self.train_test_split(split_type='overlap',
+										split_pct = split_pct,
+										val_split_pct = val_split_pct)
+		
+		# run reshape
+		self.reshape_ts(step = step,
+										sample_size = sample_size)

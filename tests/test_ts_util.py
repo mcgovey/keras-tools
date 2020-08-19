@@ -273,6 +273,57 @@ class TestRNN:
 							verbose=0)
 		
 		return model, history
+		
+	def test_ts_transform(self):
+		"""Compare output of the transform method with the same output of individual components"""
+		# standardize the inputs
+		split_pct = 0.3
+		val_split_pct = 0.1
+		step = 1
+		sample_size = 1
+		feature_list = [1,2]
+		
+		
+		# create instance of standard two step process
+		self.scale_helper = KerasTools.keras_tools(self.sales_df, 
+                                    features = feature_list, 
+                                    index = 0, ts_n_y_vals = self.y_steps, debug=False)
+		
+		
+		
+		self.scale_helper.train_test_split(split_type='overlap',
+										split_pct = split_pct,
+										val_split_pct = val_split_pct)
+		
+		
+		self.scale_helper.reshape_ts(step = step,
+										sample_size = sample_size)
+										
+		# create instance of ts_transform method
+		self.scale_helper2 = KerasTools.keras_tools(self.sales_df, 
+                                    features = [1,2], 
+                                    index = 0, ts_n_y_vals = self.y_steps, debug=False)
+		
+		
+		self.scale_helper2.ts_transform(split_type='overlap',
+										split_pct = split_pct,
+										val_split_pct = val_split_pct,
+										step = step,
+										sample_size = sample_size)
+		
+		# test array shape
+		assert self.scale_helper.X_train.shape == self.scale_helper2.X_train.shape
+		assert self.scale_helper.y_train.shape == self.scale_helper2.y_train.shape
+		
+		assert self.scale_helper.X_test.shape == self.scale_helper2.X_test.shape
+		assert self.scale_helper.y_test.shape == self.scale_helper2.y_test.shape
+		
+		assert self.scale_helper.X_valid.shape == self.scale_helper2.X_valid.shape
+		assert self.scale_helper.y_valid.shape == self.scale_helper2.y_valid.shape
+		
+		# assert array equality
+		np.testing.assert_array_equal(self.scale_helper.X_train, self.scale_helper2.X_train)
+		
 ### Tests
 ## train_test_split
 # split_pct less than 0
