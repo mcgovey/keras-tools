@@ -4,7 +4,9 @@ import pandas as pd
 import numpy as np
 from math import floor, ceil
 import pytest
-from tensorflow.keras import models, layers, callbacks, Input
+from tensorflow.keras import models, layers, callbacks, Input # keras for model building
+
+from sklearn.preprocessing import MinMaxScaler, StandardScaler # scalers for passed scalers
 
 class TestRNN:
 	def setup(self):
@@ -13,15 +15,24 @@ class TestRNN:
 		
 		self.helper = ""
 		self.y_steps = 5
-		
-	def test_ts_setup_types(self):
+	
+	
+	@pytest.mark.parametrize("feature_list", [[1, 2], ['cases', 'deaths']])
+	@pytest.mark.parametrize("y_steps", [1, 3, 5])
+	
+	def test_ts_setup_types(self, feature_list, y_steps):
+		self.helper = KerasTools.keras_tools(self.sales_df,
+                                    features = feature_list, 
+                                    index = 0,  ts_n_y_vals = y_steps, debug=False)
 		# different features
 		# different y vals
 		# different indices
 		# different feature columns
 		pass
 	
+	# @pytest.mark.parametrize("split_type", ['sequential', 'sample', 'overlap'])
 	def test_split(self):
+		"""Test different split types"""
 		
 		
 		self.helper = KerasTools.keras_tools(self.sales_df,
@@ -38,21 +49,13 @@ class TestRNN:
                                     features = [1,2], 
                                     index = 0, ts_n_y_vals = self.y_steps, debug=False)
 		
-		
-		# with pytest.raises(AttributeError) as excinfo:
-		# 	self.scale_helper.scale() #no scaler passed
-			
-		# assert "Scaler type None" in str(excinfo.value)
-		
 		# created scaler passed minmax
-		
 		
 		step = 1
 		sample_size = 1
 		
 		# name of scaler passed
 		self.scale_helper.train_test_split(split_type='sample')
-		# self.scale_helper.scale(scaler = "minmax")
 		
 		return_val = self.scale_helper.reshape_ts(step = step,
 					sample_size = sample_size,
@@ -63,6 +66,26 @@ class TestRNN:
 		# return scaler is true
 		
 	def test_scale_passed(self):
+		# TODO: add scaler handling
+		
+		# self.scale_helper = KerasTools.keras_tools(self.sales_df, 
+  #                                  features = [1,2], 
+  #                                  index = 0, ts_n_y_vals = self.y_steps, debug=False)
+		
+		# # created scaler passed minmax
+		
+		# step = 1
+		# sample_size = 1
+		
+		# # name of scaler passed
+		# self.scale_helper.train_test_split(split_type='sample')
+		
+		# return_val = self.scale_helper.reshape_ts(step = step,
+		# 			sample_size = sample_size,
+		# 			scaler = "standard",
+		# 			output_scaler=True)
+		
+		# assert return_val is not None
 		pass
 	
 	def test_scale_not_defined(self):
@@ -323,6 +346,13 @@ class TestRNN:
 		
 		# assert array equality
 		np.testing.assert_array_equal(self.scale_helper.X_train, self.scale_helper2.X_train)
+		np.testing.assert_array_equal(self.scale_helper.y_train, self.scale_helper2.y_train)
+		
+		np.testing.assert_array_equal(self.scale_helper.X_test, self.scale_helper2.X_test)
+		np.testing.assert_array_equal(self.scale_helper.y_test, self.scale_helper2.y_test)
+		
+		np.testing.assert_array_equal(self.scale_helper.X_valid, self.scale_helper2.X_valid)
+		np.testing.assert_array_equal(self.scale_helper.y_valid, self.scale_helper2.y_valid)
 		
 ### Tests
 ## train_test_split

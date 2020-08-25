@@ -342,9 +342,81 @@ class keras_tools:
 		"""
 		pass
 	
-	def shape_predictions(self):
-		pass
+	def predict_ts(self, 
+					x_values, 
+					y_values:object = None, 
+					model:object = None,
+					predict_shape:str = '2d'):
+		"""Generates predictions from model for given x input
+		
+		Args:
+			x_values (): 
+			y_values (object): np.array of actuals if comparing values to actuals
+			model (object): object of Keras model, can be optional if a model has been passed in previous method
+			predict_shape (str): string indicator or '2d' or '3d' indicating how final layer of model is structured. See docs for more information.
+		"""
+		
+		predict_shape = predict_shape.lower()
+		pred_list = []
+		actual_list = y_values[:,:,0]
+		
+		# predict future weeks
+		pred_list = self._train_iterative_preds(x_values, model)
+		
+		print('train predict {} and actual shape {}'.format(np.asarray(pred_list)[:,:,0].shape, np.asarray(actual_list).shape))
+		
+		pred_list = self._reshape_pred_lists(np.asarray(pred_list)[:,:,0], 'preds', date_first=True)
+		actual_list = self._reshape_pred_lists(actual_list, 'actuals', date_first=True)
+		
+		return pred_list, actual_list
+	def _reshape_pred_lists (self, pred_list, column_name, date_first=True):
+		"""Generates predictions from model for given x input
+		
+		Args:
+		
+		"""
+		# reshape data
+		pred_list = np.asarray(pred_list)
+		pred_list = np.stack(pred_list)
+		if pred_list.ndim == 3:
+		    pred_list = pd.DataFrame(pred_list[0,:,:])
+		else:
+		    pred_list = pd.DataFrame(pred_list)
+		pred_list = pd.DataFrame(pred_list.T)
+		
+		pred_list = pd.DataFrame(pred_list.stack())
+		pred_list.reset_index(inplace=True)
+		if date_first == True:
+		    pred_list.columns = ['SKU_idx', 'DATE_idx', column_name]
+		else:
+		    pred_list.columns = ['DATE_idx', 'SKU_idx', column_name]
+		    
+		# rescale and exponentiate the data
+		# pred_list.loc[:,column_name] = scaler.inverse_transform(pd.DataFrame(pred_list.loc[:,column_name]))
+		# pred_list.loc[:,column_name] = pred_list.loc[:,column_name].apply(np.exp)
+		# pred_list.loc[:,column_name] = pred_list.loc[:,column_name].fillna(0)
+		
+		return pred_list
 
+	def _train_iterative_preds (self, x_train, model):
+		"""
+		
+		"""
+		pred_list2 = []
+		
+		if isinstance(x_train,(list)):
+			for i in range(x_train[0].shape[0]):
+				batch = x_train[0][i,:,:].reshape(1, x_train[0].shape[1], x_train[0].shape[2])
+				batch2 = x_train[1][i,:,:].reshape(1, x_train[1].shape[1], x_train[1].shape[2])
+				pred_list2.append(model.predict([batch, batch2])[0])
+		else:
+			for i in range(x_train.shape[0]):
+				batch = x_train[i,:,:].reshape(1, x_train.shape[1], x_train.shape[2])
+				pred_list2.append(model.predict(batch)[0])
+		
+		return pred_list2
+	    
+	 
 	def model_summary(self, 
 						model:object, 
 						history:object = None, 
@@ -359,6 +431,8 @@ class keras_tools:
 			Returns:
 
 		"""
+		self.model = model
+		self.history = history
 		
 		print(model.summary())
 		
