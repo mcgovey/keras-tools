@@ -305,7 +305,7 @@ class keras_tools:
 				scaler (sklearn scaler or string, optional): optional scaling of data, passed as sklearn scaler or string of scaler type (minmax or standard).
 				output_scaler (bool, optional): Include the fit scaler in the output. Default is False.
 			Returns:
-
+				scaler (object): If output_scaler==True then the fit scaler used will be returned.
 		"""
 		if scaler != None:
 			self._scale(scaler = scaler, output_scaler = output_scaler)
