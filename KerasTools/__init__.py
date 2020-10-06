@@ -354,21 +354,28 @@ class keras_tools:
 			y_values (object): np.array of actuals if comparing values to actuals
 			model (object): object of Keras model, can be optional if a model has been passed in previous method
 			predict_shape (str): string indicator or '2d' or '3d' indicating how final layer of model is structured. See docs for more information.
+			
+		Returns:
+			pred_list, actual_list (tuple of lists): Returns a list of predictions (returns a tuple of lists if y_values are provided for validation as well)
 		"""
 		
 		predict_shape = predict_shape.lower()
 		pred_list = []
-		actual_list = y_values[:,:,0]
+		if y_values is not None: actual_list = y_values[:,:,0]
 		
 		# predict future weeks
 		pred_list = self._train_iterative_preds(x_values, model)
 		
-		print('train predict {} and actual shape {}'.format(np.asarray(pred_list)[:,:,0].shape, np.asarray(actual_list).shape))
+		# print('train predict {} and actual shape {}'.format(np.asarray(pred_list)[:,:,0].shape, np.asarray(actual_list).shape))
 		
 		pred_list = self._reshape_pred_lists(np.asarray(pred_list)[:,:,0], 'preds', date_first=True)
-		actual_list = self._reshape_pred_lists(actual_list, 'actuals', date_first=True)
+		if y_values is not None: 
+			actual_list = self._reshape_pred_lists(actual_list, 'actuals', date_first=True)
+			return pred_list, actual_list
 		
-		return pred_list, actual_list
+		else:
+			return pred_list
+			
 	def _reshape_pred_lists (self, pred_list, column_name, date_first=True):
 		"""Generates predictions from model for given x input
 		

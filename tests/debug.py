@@ -66,7 +66,9 @@ history = model.fit(helper.X_train,
                         epochs=10,
                         verbose=1)
                         
-helper.model_summary(model, history, show_charts=True)
+# helper.model_summary(model, history, show_charts=True)
 # print(f"X_train: {helper.X_train}")
 # print(f"y_train: {helper.y_train}")
 
+preds = helper.predict_ts(helper.X_valid, model = model)
+print(preds)

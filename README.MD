@@ -9,9 +9,18 @@ This package contains helpful functions for preparing and understanding data out
 !!Important: Currently only tools used for RNNs have been implemented for this project. Additional features described in the roadmap below are planned for addition. 
 If you have suggestions please open an [Issue](https://github.com/mcgovey/KerasTools/issues) and flag it as an enhancement.
 
-### Multiple Input - Single Output
+## Documentation
+Full documentation can be found [here](https://kerastools.readthedocs.io/en/latest/api_docs.html).
 
-### Multiple Input - Mulitple Output
+## Remaining steps
+- Finish predict_ts api
+- Build predict_ts tests
+- Create unscale api
+- Build unscale tests
+- Run through tests again and add where coverage is missing
+- Update docs with full comments and examples
+- Refactor readme page
+- Submit to pypi
 
 ## Modules Under Development and Planned
 - Universal prep
