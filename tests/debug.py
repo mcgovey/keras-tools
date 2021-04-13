@@ -69,6 +69,6 @@ history = model.fit(helper.X_train,
 # helper.model_summary(model, history, show_charts=True)
 # print(f"X_train: {helper.X_train}")
 # print(f"y_train: {helper.y_train}")
-
+print(helper.X_valid)
 preds = helper.predict_ts(helper.X_valid, model = model)
 print(preds)

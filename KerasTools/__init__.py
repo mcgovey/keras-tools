@@ -368,9 +368,9 @@ class keras_tools:
 		
 		# print('train predict {} and actual shape {}'.format(np.asarray(pred_list)[:,:,0].shape, np.asarray(actual_list).shape))
 		
-		pred_list = self._reshape_pred_lists(np.asarray(pred_list)[:,:,0], 'preds', date_first=True)
+		pred_list = self._reshape_pred_lists(np.asarray(pred_list), 'preds', date_first=True)
 		if y_values is not None: 
-			actual_list = self._reshape_pred_lists(actual_list, 'actuals', date_first=True)
+			actual_list = self._reshape_pred_lists(np.asarray(actual_list), 'actuals', date_first=True)
 			return pred_list, actual_list
 		
 		else:
@@ -380,6 +380,9 @@ class keras_tools:
 		"""Generates predictions from model for given x input
 		
 		Args:
+			pred_list (np.array): 2D or 3D array of predictions
+			column_name (str): name of the column that the prediction corresponds to
+			date_first(bool): Boolean specifying where the position of the date is in the passed array
 		
 		"""
 		# reshape data
