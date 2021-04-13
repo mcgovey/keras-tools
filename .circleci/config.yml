@@ -14,7 +14,7 @@ jobs:
           command: make install
       # - python/load-cache
       # - python/install-deps
-      - python/save-cache
+      # - python/save-cache
       - run:
           command: make test #./manage.py test
           name: Test
