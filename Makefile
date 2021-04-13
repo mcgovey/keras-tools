@@ -3,7 +3,7 @@
 
 install:
 	pip install --upgrade pip &&\
-		pip install -r requirements.txt
+		pip install -r requirements.txt --upgrade
 		
 test:
 	# python3 -m pytest -vv --cov=myrepolib tests/*.py -W ignore::ResourceWarning 
